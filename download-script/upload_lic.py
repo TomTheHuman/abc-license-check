@@ -54,7 +54,7 @@ with open('./data/report.csv') as datafile:
 
 if __name__ == "__main__":
     
-    def function:
+    def function():
         print("Function")
 
     
