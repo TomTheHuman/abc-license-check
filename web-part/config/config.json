@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "abc-lic-check-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/abcLicCheck/AbcLicCheckWebPart.js",
+          "manifest": "./src/webparts/abcLicCheck/AbcLicCheckWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "AbcLicCheckWebPartStrings": "lib/webparts/abcLicCheck/loc/{locale}.js"
+  }
+}
