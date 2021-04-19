@@ -132,8 +132,6 @@ if __name__ == "__main__":
             args.append(item['transTo'])
             args.append(item['geoCode'])
 
-            print('poop')
-
             try:
                 cursor = conn.cursor()
                 cursor.execute(query, args)
