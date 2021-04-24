@@ -6,7 +6,7 @@ import os
 load_dotenv()
 
 HOST = os.environ.get("HOST")
-USERNAME = os.environ.get("USER")
+USERNAME = os.environ.get("USERNAME")
 PASS = os.environ.get("PASS")
 DB = os.environ.get("DB")
 
