@@ -108,33 +108,11 @@ if __name__ == "__main__":
             geocode
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
 
-
-
         for item in data:
-            args = []
-            args.append(item['licNumber'])
-            args.append(item['statusFrom'])
-            args.append(item['statusTo'])
-            args.append(item['licType'])
-            args.append(item['issueDate'])
-            args.append(item['expDate'])
-            args.append(item['acctName'])
-            args.append(item['acctOwn'])
-            args.append(item['acctStreet'])
-            args.append(item['acctCity'])
-            args.append(item['acctState'])
-            args.append(item['acctZip'])
-            args.append(item['mailStreet'])
-            args.append(item['mailCity'])
-            args.append(item['mailState'])
-            args.append(item['mailZip'])
-            args.append(item['transFrom'])
-            args.append(item['transTo'])
-            args.append(item['geoCode'])
 
             try:
                 cursor = conn.cursor()
-                cursor.execute(query, args)
+                cursor.execute(query, item.values())
 
                 if cursor.lastrowid:
                     print('Last Insert ID: ', cursor.lastrowid)
