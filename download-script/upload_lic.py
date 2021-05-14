@@ -1,8 +1,15 @@
+from os import error
 import db
 import csv
 import mysql.connector
 from mysql.connector import Error
 import datetime
+
+# TODO convert numbers to ints for sorting purposes
+# TODO test and make sure new_applications is working (no test data as of yet)
+# TODO fix geocode / geo_code issue
+# TODO make dict keys same as mysql table column names
+
 
 def collect_status_changes():
     with open('./data/report_status_changes.csv') as datafile:
@@ -15,16 +22,16 @@ def collect_status_changes():
             item['lic_number'] = row[0].strip()
             item['status_from'] = row[1][:(row[1].find(' '))].strip()
             item['status_to'] = row[1][(row[1].find(' ') + 1):].strip()
-            item['lic_type'] = row[2][:(row[2].find(' ') - 2)].strip()
-            item['lic_dup'] = row[2][-2:]
+            item['lic_type'] = row[2][:(row[2].find(' '))].strip()
+            item['lic_dup'] = row[2][(row[2].find('|') + 1):].strip()
 
             if len(row[3]) > 0:
                 datetime_issue = datetime.datetime.strptime(row[3].strip(), format_str) if row[3].strip() != '' else None
-                item['issue_date'] = datetime_issue
+                item['issue_date'] = datetime_issue.strftime('%Y-%m-%d')
 
             if len(row[4]) > 0:
                 datetime_exp = datetime.datetime.strptime(row[4].strip(), format_str) if row[4].strip() != '' else None
-                item['exp_date'] = datetime_exp
+                item['exp_date'] = datetime_exp.strftime('%Y-%m-%d')
             
             prim_own_addr = row[5].split('                        ')
             if(prim_own_addr[0][:3] == 'DBA'):
@@ -60,7 +67,7 @@ def collect_status_changes():
                 mail_stateZip = mail_cityStateZip.split(', ')[1]
                 item['mail_state'] = mail_stateZip[:2].strip()
                 item['mail_zip'] = mail_stateZip[4:].strip()
-            elif len(mail_addr) > 0:
+            elif len(mail_addr) > 0 and not mail_addr[0] == '':
                 item['mail_street'] = mail_addr[0].strip()
                 item['mail_city'] = ''
                 item['mail_state'] = ''
@@ -73,16 +80,16 @@ def collect_status_changes():
 
             trans_from_to = row[7].split('/ ')
             if len(trans_from_to) == 0:
-                item['trans_from'] = ""
-                item['trans_to'] = ""
+                item['trans_from'] = ''
+                item['trans_to'] = ''
             elif len(trans_from_to) == 1:
                 item['trans_from'] = trans_from_to[0].strip()
-                item['trans_to'] = ""
+                item['trans_to'] = ''
             elif len(trans_from_to) == 2:
                 item['trans_from'] = trans_from_to[0].strip()
                 item['trans_to'] = trans_from_to[1].strip()
 
-            item['geo_code'] = row[11] if len(row[11]) > 0 else None
+            item['geo_code'] = row[11] if len(row[11]) > 0 else ''
             data_status_changes.append(item)
 
         return data_status_changes
@@ -98,10 +105,11 @@ def collect_issued_licenses():
             item['lic_number'] = row[0].strip()
             item['status'] = row[1].strip()
             item['lic_type'] = row[2].strip()
+            item['lic_dup'] = row[2][(row[2].find('|') + 1):].strip() if r"|" in row[2] else ''
             
             if len(row[3]) > 0:
                 datetime_exp = datetime.datetime.strptime(row[3].strip(), format_str) if row[3].strip() != '' else None
-                item['exp_date'] = datetime_exp
+                item['exp_date'] = datetime_exp.strftime('%Y-%m-%d')
             
             prim_own_addr = row[4].split('                            ')
             if(prim_own_addr[0][:3] == 'DBA'):
@@ -148,92 +156,96 @@ def collect_issued_licenses():
                 item['mail_state'] = ''
                 item['mail_zip'] = ''
 
-            item['action'] = row[6] if len(row[6]) > 0 else None
-            item['conditions'] = row[7] if len(row[7]) > 0 else None
-            item['escrow_addr'] = row[8] if len(row[8]) > 0 else None
-            item['district_code'] = row[9] if len(row[9]) > 0 else None
-            item['geo_code'] = row[10] if len(row[10]) > 0 else None
+            item['action'] = row[6] if len(row[6]) > 0 else ''
+            item['conditions'] = row[7] if len(row[7]) > 0 else ''
+            item['escrow_addr'] = row[8] if len(row[8]) > 0 else ''
+            item['district_code'] = row[9] if len(row[9]) > 0 else ''
+            item['geo_code'] = row[10] if len(row[10]) > 0 else ''
 
             data_issued_licenses.append(item)
 
         return data_issued_licenses
 
 def collect_new_applications():
-    with open('./data/report_new_applications.csv') as datafile:
-        data_new_applications = []
-        data_reader = csv.reader(datafile)
-        next(data_reader)
-        format_str = '%m/%d/%Y'
-        for row in data_reader:
-            item = {}
-            item['lic_number'] = row[0].strip()
-            item['status'] = row[1].strip()
-            item['lic_type'] = row[2][:(row[2].find(' ') - 2)].strip()
-            item['lic_dup'] = row[2][-2:]
+    try:
+        with open('./data/report_new_applications.csv') as datafile:
+            data_new_applications = []
+            data_reader = csv.reader(datafile)
+            next(data_reader)
+            format_str = '%m/%d/%Y'
+            for row in data_reader:
+                item = {}
+                item['lic_number'] = row[0].strip()
+                item['status'] = row[1].strip()
+                item['lic_type'] = row[2][:(row[2].find(' ') - 2)].strip()
+                item['lic_dup'] = row[2][-2:].strip()
 
-            if len(row[3]) > 0:
-                datetime_exp = datetime.datetime.strptime(row[3].strip(), format_str) if row[4].strip() != '' else None
-                item['exp_date'] = datetime_exp
-            
-            prim_own_addr = row[4].split('                        ')
-            if(prim_own_addr[0][:3] == 'DBA'):
-                item['acct_name'] = prim_own_addr[0][5:].strip()
-                item['acct_own'] = prim_own_addr[1].strip()
-                item['acct_street'] = prim_own_addr[2][:-1].strip()
-
-                acct_cityStateZip = prim_own_addr[3]
-                item['acct_city'] = acct_cityStateZip.split(', ')[0].strip()
-
-                acct_stateZip = acct_cityStateZip.split(', ')[1]
-                item['acct_state'] = acct_stateZip[:2].strip()
-                item['acct_zip'] = acct_stateZip[4:].strip()
-            else:
-                item['acct_name'] = ''
-                item['acct_own'] = prim_own_addr[0].strip()
-                item['acct_street'] = prim_own_addr[1][:-1].strip()
+                if len(row[3]) > 0:
+                    datetime_exp = datetime.datetime.strptime(row[3].strip(), format_str) if row[4].strip() != '' else None
+                    item['exp_date'] = datetime_exp.strftime('%Y-%m-%d')
                 
-                acct_cityStateZip = prim_own_addr[2]
-                item['acct_city'] = acct_cityStateZip.split(', ')[0].strip()
+                prim_own_addr = row[4].split('                        ')
+                if(prim_own_addr[0][:3] == 'DBA'):
+                    item['acct_name'] = prim_own_addr[0][5:].strip()
+                    item['acct_own'] = prim_own_addr[1].strip()
+                    item['acct_street'] = prim_own_addr[2][:-1].strip()
 
-                acct_stateZip = acct_cityStateZip.split(', ')[1]
-                item['acct_state'] = acct_stateZip[:2].strip()
-                item['acct_zip'] = acct_stateZip[4:].strip()
+                    acct_cityStateZip = prim_own_addr[3]
+                    item['acct_city'] = acct_cityStateZip.split(', ')[0].strip()
 
-            mail_addr = row[5].split('                              ')
-            if len(mail_addr) > 1:
-                item['mail_street'] = mail_addr[0].strip()
+                    acct_stateZip = acct_cityStateZip.split(', ')[1]
+                    item['acct_state'] = acct_stateZip[:2].strip()
+                    item['acct_zip'] = acct_stateZip[4:].strip()
+                else:
+                    item['acct_name'] = ''
+                    item['acct_own'] = prim_own_addr[0].strip()
+                    item['acct_street'] = prim_own_addr[1][:-1].strip()
+                    
+                    acct_cityStateZip = prim_own_addr[2]
+                    item['acct_city'] = acct_cityStateZip.split(', ')[0].strip()
 
-                mail_cityStateZip = mail_addr[1]
-                item['mail_city'] = mail_cityStateZip.split(', ')[0].strip()
+                    acct_stateZip = acct_cityStateZip.split(', ')[1]
+                    item['acct_state'] = acct_stateZip[:2].strip()
+                    item['acct_zip'] = acct_stateZip[4:].strip()
 
-                mail_stateZip = mail_cityStateZip.split(', ')[1]
-                item['mail_state'] = mail_stateZip[:2].strip()
-                item['mail_zip'] = mail_stateZip[4:].strip()
-            elif len(mail_addr) > 0:
-                item['mail_street'] = mail_addr[0].strip()
-                item['mail_city'] = ''
-                item['mail_state'] = ''
-                item['mail_zip'] = ''
-            else:
-                item['mail_street'] = ''
-                item['mail_city'] = ''
-                item['mail_state'] = ''
-                item['mail_zip'] = ''
+                mail_addr = row[5].split('                              ')
+                if len(mail_addr) > 1:
+                    item['mail_street'] = mail_addr[0].strip()
+
+                    mail_cityStateZip = mail_addr[1]
+                    item['mail_city'] = mail_cityStateZip.split(', ')[0].strip()
+
+                    mail_stateZip = mail_cityStateZip.split(', ')[1]
+                    item['mail_state'] = mail_stateZip[:2].strip()
+                    item['mail_zip'] = mail_stateZip[4:].strip()
+                elif len(mail_addr) > 0:
+                    item['mail_street'] = mail_addr[0].strip()
+                    item['mail_city'] = ''
+                    item['mail_state'] = ''
+                    item['mail_zip'] = ''
+                else:
+                    item['mail_street'] = ''
+                    item['mail_city'] = ''
+                    item['mail_state'] = ''
+                    item['mail_zip'] = ''
 
 
-            item['action'] = row[6] if len(row[6]) > 0 else None
-            item['conditions'] = row[7] if len(row[7]) > 0 else None
-            item['escrow_addr'] = row[8] if len(row[8]) > 0 else None
-            item['district_code'] = row[9] if len(row[9]) > 0 else None
-            item['geo_code'] = row[10] if len(row[10]) > 0 else None
+                item['action'] = row[6] if len(row[6]) > 0 else ''
+                item['conditions'] = row[7] if len(row[7]) > 0 else ''
+                item['escrow_addr'] = row[8] if len(row[8]) > 0 else ''
+                item['district_code'] = row[9] if len(row[9]) > 0 else ''
+                item['geo_code'] = row[10] if len(row[10]) > 0 else ''
 
-            data_new_applications.append(item)
-        
-        return data_new_applications
+                data_new_applications.append(item)
+            
+            return data_new_applications
+    except:
+        print(error)
+        return ''
 
 def upload_status_changes(data):
     conn = db.get_db()
-    query = f'''INSERT INTO status_changes(
+    query = f'''INSERT INTO status_changes (
         lic_num,
         status_from,
         status_to,
@@ -253,22 +265,21 @@ def upload_status_changes(data):
         mail_zip,
         trans_from,
         trans_to,
-        geo_code
+        geocode
     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
 
     for item in data:
 
         try:
             cursor = conn.cursor()
-            for key in item.keys():
-                print(key, ": ", item[key])
-            cursor.execute(query, item.values())
+            args = list(item.values())
+            cursor.execute(query, args)
 
             if cursor.lastrowid:
                 print('Last Insert ID: ', cursor.lastrowid)
             else:
                 print('Last Insert ID Not Found!')
-
+            
             conn.commit()
         
         except Error as e:
@@ -307,9 +318,8 @@ def upload_issued_licenses(data):
 
         try:
             cursor = conn.cursor()
-            for key in item.keys():
-                print(key, ": ", item[key])
-            cursor.execute(query, item.values())
+            args = list(item.values())
+            cursor.execute(query, args)
 
             if cursor.lastrowid:
                 print('Last Insert ID: ', cursor.lastrowid)
@@ -354,9 +364,8 @@ def upload_new_applications(data):
 
         try:
             cursor = conn.cursor()
-            for key in item.keys():
-                print(key, ": ", item[key])
-            cursor.execute(query, item.values())
+            args = list(item.values())
+            cursor.execute(query, args)
 
             if cursor.lastrowid:
                 print('Last Insert ID: ', cursor.lastrowid)
@@ -372,6 +381,7 @@ def upload_new_applications(data):
 
     conn.close()
  
+
 if __name__ == "__main__":
 
     # Collect data from reports
@@ -383,4 +393,4 @@ if __name__ == "__main__":
     # Upload data from files to MySQL
     upload_status_changes(data_status_changes)
     upload_issued_licenses(data_issued_licenses)
-    upload_new_applications(data_new_applications)
+    # upload_new_applications(data_new_applications)
