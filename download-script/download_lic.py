@@ -57,3 +57,4 @@ if __name__ == '__main__':
     get_report('issued licenses')
     get_report('new applications')
 
+    browser.close();
