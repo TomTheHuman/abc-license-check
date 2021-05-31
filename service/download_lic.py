@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 
 def get_report( report):
-    '''This function checks for the presence of, downloads, and renames the status requested report from ABC'''
+    '''This function checks for the presence of, downloads, and renames the requested report from ABC'''
 
 
     # Declare report data - Index 0: data file name, Index 1: report URL
