@@ -21,8 +21,8 @@ export default class AbcLicCheckWebPart extends BaseClientSideWebPart<IAbcLicChe
     const element: React.ReactElement<IAbcLicCheckProps> = React.createElement(
       AbcLicCheck,
       {
-        description: this.properties.description
-      }
+        description: this.properties.description,
+      },
     );
 
     ReactDom.render(element, this.domElement);
