@@ -1,5 +1,6 @@
 export interface IAbcLicCheckState {
-    currentPage: string;
-    reports: Array<any>;
-  }
-  
+  currentPage: string;
+  menuOpen: boolean;
+  menuOptions: Array<any>;
+  reports: Array<any>;
+}
