@@ -3,25 +3,25 @@ import styles from "./AbcLicCheck.module.scss";
 import { IAbcLicCheckProps } from "./IAbcLicCheckProps";
 import { escape } from "@microsoft/sp-lodash-subset";
 import { PropertyPaneSlider } from "@microsoft/sp-property-pane";
+import { PrimaryButton } from "office-ui-fabric-react";
 
 const Navigation = ({ handlePageButton, handleOptionButton, state }) => {
   return (
     <div className={styles.nav}>
       <div className={styles.pageButtons}>
-        <button
+        <PrimaryButton
           onClick={() => handlePageButton("dashboard")}
           id={state.currentPage == "dashboard" ? styles.selectedPage : ""}
-          className={styles.pageButton}
+          className="rectangle"
         >
           Dashboard
-        </button>
+        </PrimaryButton>
         {GetPageButtons(handlePageButton, state)}
-        {console.log(state.reports)}
       </div>
       <div className={styles.optionsButtons}>
-        <button onClick={() => handleOptionButton()} id={styles.optionsButton}>
+        <PrimaryButton onClick={() => handleOptionButton()} id={styles.optionsButton}>
           ⚙️
-        </button>
+        </PrimaryButton>
         {state.menuOpen ? GetOptionMenu(handlePageButton, state) : ""}
       </div>
     </div>
@@ -29,16 +29,17 @@ const Navigation = ({ handlePageButton, handleOptionButton, state }) => {
 };
 
 function GetPageButtons(handlePageButton: Function, state) {
-  const buttons = state.reports.map((report) => {
+
+  const buttons = state.pages.map((report) => {
     return (
-      <button
+      <PrimaryButton
         onClick={() => handlePageButton(report.name)}
         id={state.currentPage == report.name ? styles.selectedPage : ""}
         key={report.name.trim()}
-        className={styles.pageButton}
+        className={`rectangle ${styles.pageButton}`}
       >
         {report.formalName}
-      </button>
+      </PrimaryButton>
     );
   });
 
@@ -46,7 +47,6 @@ function GetPageButtons(handlePageButton: Function, state) {
 }
 
 function GetOptionMenu(handlePageButton: Function, state) {
-  console.log(state);
 
   function getOptions(options: Array<any>) {
     let optionsHTML = options.map((option) => {
@@ -65,7 +65,7 @@ function GetOptionMenu(handlePageButton: Function, state) {
 
   return (
     <div className={styles.optionMenu}>
-      <ul className={styles.optionList}>{getOptions(state.menuOptions)}</ul>
+      <ul className={styles.optionList}>{getOptions(state.options)}</ul>
     </div>
   );
 }

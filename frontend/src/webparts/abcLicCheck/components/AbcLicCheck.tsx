@@ -17,34 +17,8 @@ export default class AbcLicCheck extends React.Component<
     this.state = {
       currentPage: "dashboard",
       menuOpen: false,
-      menuOptions: [
-        {
-          name: "manage territories",
-          formalName: "Manage Territories",
-        },
-        {
-          name: "email recipients",
-          formalName: "Email Recipients",
-        },
-        {
-          name: "download logs",
-          formalName: "Download Logs",
-        },
-      ],
-      reports: [
-        {
-          name: "status changes",
-          formalName: "Status Changes",
-        },
-        {
-          name: "issued licenses",
-          formalName: "Issued Licenses",
-        },
-        {
-          name: "new applications",
-          formalName: "New Applications",
-        },
-      ],
+      options: NavOptions.options,
+      pages: NavOptions.reports,
     };
 
     this.handlePage = this.handlePage.bind(this);
@@ -53,16 +27,15 @@ export default class AbcLicCheck extends React.Component<
   }
 
   private handlePage() {
-    console.log(this.state.currentPage);
 
     switch (this.state.currentPage) {
       case "dashboard":
         return <Dashboard state={this.state} />;
       default:
         let report = "";
-        for (var i = 0; i < this.state.reports.length; i++) {
-          if (this.state.reports[i].name == this.state.currentPage) {
-            report = this.state.reports[i];
+        for (var i = 0; i < this.state.pages.length; i++) {
+          if (this.state.pages[i].name == this.state.currentPage) {
+            report = this.state.pages[i];
           }
         }
         return <Report report={report} />;
@@ -79,8 +52,7 @@ export default class AbcLicCheck extends React.Component<
     this.setState(
       {
         menuOpen: !this.state.menuOpen,
-      },
-      () => console.log(this.state.menuOpen)
+      }
     );
   }
 
@@ -97,3 +69,34 @@ export default class AbcLicCheck extends React.Component<
     );
   }
 }
+
+const NavOptions:any = {
+    options: [
+      {
+        name: "manage territories",
+        formalName: "Manage Territories",
+      },
+      {
+        name: "email recipients",
+        formalName: "Email Recipients",
+      },
+      {
+        name: "download logs",
+        formalName: "Download Logs",
+      },
+    ],
+    reports: [
+      {
+        name: "status changes",
+        formalName: "Status Changes",
+      },
+      {
+        name: "issued licenses",
+        formalName: "Issued Licenses",
+      },
+      {
+        name: "new applications",
+        formalName: "New Applications",
+      },
+    ]
+  }
