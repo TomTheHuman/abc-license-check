@@ -5,69 +5,78 @@ import { escape } from "@microsoft/sp-lodash-subset";
 import { PropertyPaneSlider } from "@microsoft/sp-property-pane";
 import { PrimaryButton } from "office-ui-fabric-react";
 
-const Navigation = ({ handlePageButton, handleOptionButton, state }) => {
+// TODO Add logic to hide menus when user clicks anywhere else on page
+
+const Navigation = ({ state, handlePageOption, handlePageButton, handleOptionsButton }) => {
   return (
     <div className={styles.nav}>
-      <div className={styles.pageButtons}>
-        <PrimaryButton
-          onClick={() => handlePageButton("dashboard")}
-          id={state.currentPage == "dashboard" ? styles.selectedPage : ""}
-          className="rectangle"
+      <div className={`${styles.dropDown} ${styles.pageDropDown}`}>
+        <button 
+        className={`${styles.navButton} ${styles.pageDropBtn}`}
+        onClick={() => handlePageButton()}
         >
-          Dashboard
-        </PrimaryButton>
-        {GetPageButtons(handlePageButton, state)}
+          Reports
+        </button>
+        <div 
+          className={styles.dropDownContent}
+          onClick={handlePageButton}>
+          <GetPageOptions state={state} handlePageOption={handlePageOption}/>
+        </div>
       </div>
-      <div className={styles.optionsButtons}>
-        <PrimaryButton onClick={() => handleOptionButton()} id={styles.optionsButton}>
-          ⚙️
-        </PrimaryButton>
-        {state.menuOpen ? GetOptionMenu(handlePageButton, state) : ""}
+      <div className={styles.pageTitle}>
+        <h1 className={styles.pageTitleText}>{state.currentPage.formalName}</h1>
+      </div>
+      <div className={`${styles.dropDown} ${styles.optDropDown}`}>
+        <button 
+        className={`${styles.navButton} ${styles.optDropBtn}`}
+        onClick={() => handleOptionsButton()}
+        >
+          Options
+        </button>
+        <div 
+          className={styles.dropDownContent}
+          onClick={handleOptionsButton}>
+          <GetOptions state={state} handlePageOption={handlePageOption}/>
+        </div>
       </div>
     </div>
   );
 };
 
-function GetPageButtons(handlePageButton: Function, state) {
+const GetPageOptions = ({state, handlePageOption}) => {
 
   const buttons = state.pages.map((report) => {
     return (
-      <PrimaryButton
-        onClick={() => handlePageButton(report.name)}
-        id={state.currentPage == report.name ? styles.selectedPage : ""}
+      <a
+        href="#"
         key={report.name.trim()}
-        className={`rectangle ${styles.pageButton}`}
+        className={styles.dropDownOption}
+        onClick={() => handlePageOption(report)}
       >
         {report.formalName}
-      </PrimaryButton>
+      </a>
     );
   });
 
-  return buttons;
+  return state.repMenuOpen && buttons;
 }
 
-function GetOptionMenu(handlePageButton: Function, state) {
+const GetOptions = ({state, handlePageOption}) => {
 
-  function getOptions(options: Array<any>) {
-    let optionsHTML = options.map((option) => {
-      return (
-        <li
-          className={styles.optionItem}
-          onClick={() => handlePageButton(option.name)}
-        >
-          {option.formalName}
-        </li>
-      );
-    });
+  let buttons = state.options.map((option) => {
+    return (
+      <a
+        href="#"
+        key={option.name.trim()}
+        className={styles.dropDownOption}
+        onClick={() => handlePageOption(option)}
+      >
+        {option.formalName}
+      </a>
+    );
+  });
 
-    return optionsHTML;
-  }
-
-  return (
-    <div className={styles.optionMenu}>
-      <ul className={styles.optionList}>{getOptions(state.options)}</ul>
-    </div>
-  );
+  return state.optMenuOpen && buttons;
 }
 
 export default Navigation;

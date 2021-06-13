@@ -13,6 +13,9 @@ $ms-color-redDark: #a4262c;
 $ms-color-greenLight: #bad80a;
 $ms-color-red: #d13438;
 
+// Set hover variable
+$box-shaddow: 0px 2px 5px rgba(0, 0, 0, 0.45);
+
 .abcLicCheck {
   font-family: sans-serif;
 
@@ -40,83 +43,87 @@ $ms-color-red: #d13438;
   display: flex;
   justify-content: space-between;
 
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
   background-color: $ms-color-neutralPrimaryAlt;
 
   .navButton {
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
-  }
-
-  .pageButtons {
-    width: 85%;
-    min-width: 600px;
-    display: flex;
-    justify-content: space-evenly;
-
-    .pageButton {
-      background-color: $ms-color-neutralSecondary;
-      transition: ease;
-      transition-duration: 0.1s;
-    }
-
-    .pageButton:hover {
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
-      filter: brightness(115%);
-    }
-
-    #selectedPage {
-      background-color: $ms-color-neutralSecondaryAlt;
-    }
-  }
-
-  .optionsButtons {
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-weight: 200;
+    font-size: 1.1em;
     width: 100%;
+  }
 
-    #optionsButton {
-      padding: 8px 15px;
+  .navButton:hover {
+    filter: brightness(120%);
+    box-shadow: $box-shaddow;
+  }
 
+  .dropDown {
+    position: relative;
+    display: inline-block;
+
+    .pageDropBtn {
+      background-color: $ms-color-neutralSecondary;
+      color: white;
+    }
+
+    .optDropBtn {
       background-color: $ms-color-redDark;
-      border: none;
-      border-radius: 10px;
-      float: right;
-
-      transition: ease;
-      transition-duration: 0.1s;
+      color: white;
     }
 
-    #optionsButton:hover {
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
-      filter: brightness(105%);
-    }
-
-    .optionMenu {
-      width: 30%;
-      max-width: 300px;
-      background-color: white;
+    .dropDownContent {
+      text-align: left;
       position: absolute;
+      background-color: white;
+      display: block;
+      width: 100%;
+      border-radius: 0px 0px 10px 10px;
+      background-color: $ms-color-neutralPrimaryAlt;
+      box-shadow: $box-shaddow;
+  
+      .dropDownOption {
+        font-size: 1em;
+        text-decoration: none;
+        padding: 15px;
+        display: block;
+        text-decoration: none;
+        color: white;
+        margin: 10px;
+        border-radius: 5px;
+        background-color: $ms-color-neutralPrimaryAlt;
 
-      right: 20px;
-      top: 65px;
-
-      border-radius: 20px;
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
-
-      .optionList {
-        width: 100%;
-        list-style: none;
-        padding: 0;
-
-        .optionItem {
-          font-size: 1em;
-          padding: 25px;
-          text-align: center;
-        }
-
-        .optionItem:hover {
-          filter: brightness(80%);
+        &:hover {
+          filter: brightness(150%);
         }
       }
     }
   }
+
+  .pageDropDown {
+    width: 30%;
+    text-align: left;
+  }
+
+  .optDropDown {
+    width: 25%;
+    text-align: right;
+  }
+
+  .pageTitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45%;
+
+    .pageTitleText {
+      font-size: 1.2em;
+      color: white;
+      margin: 0px;
+    }
+  }
+
 }

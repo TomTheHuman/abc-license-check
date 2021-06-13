@@ -1,7 +1,7 @@
 import * as React from "react";
 import styles from "./AbcLicCheck.module.scss";
 import { IAbcLicCheckProps } from "./IAbcLicCheckProps";
-import { IAbcLicCheckState } from "./IAbcLicCheckState";
+import { IAbcLicCheckState, Page } from "./IAbcLicCheckState";
 import Navigation from "./Navigation";
 import Dashboard from "./Dashboard";
 import Report from "./Report";
@@ -15,26 +15,28 @@ export default class AbcLicCheck extends React.Component<
     super(props);
 
     this.state = {
-      currentPage: "dashboard",
-      menuOpen: false,
+      currentPage: NavOptions.reports[0],
+      repMenuOpen: false,
+      optMenuOpen: false,
       options: NavOptions.options,
       pages: NavOptions.reports,
     };
 
     this.handlePage = this.handlePage.bind(this);
+    this.handlePageOption = this.handlePageOption.bind(this);
     this.handlePageButton = this.handlePageButton.bind(this);
-    this.handleOptionButton = this.handleOptionButton.bind(this);
+    this.handleOptionsButton = this.handleOptionsButton.bind(this);
   }
 
   private handlePage() {
 
-    switch (this.state.currentPage) {
+    switch (this.state.currentPage.name) {
       case "dashboard":
         return <Dashboard state={this.state} />;
       default:
         let report = "";
         for (var i = 0; i < this.state.pages.length; i++) {
-          if (this.state.pages[i].name == this.state.currentPage) {
+          if (this.state.pages[i].name == this.state.currentPage.name) {
             report = this.state.pages[i];
           }
         }
@@ -42,16 +44,25 @@ export default class AbcLicCheck extends React.Component<
     }
   }
 
-  private handlePageButton(pageName: string) {
+  private handlePageOption(page: Page) {
     this.setState({
-      currentPage: pageName,
+      currentPage: page,
     });
   }
 
-  private handleOptionButton() {
+  private handlePageButton() {
     this.setState(
       {
-        menuOpen: !this.state.menuOpen,
+        repMenuOpen: !this.state.repMenuOpen,
+        optMenuOpen: false,
+      });
+  }
+
+  private handleOptionsButton() {
+    this.setState(
+      {
+        repMenuOpen: false,
+        optMenuOpen: !this.state.optMenuOpen,
       }
     );
   }
@@ -60,15 +71,17 @@ export default class AbcLicCheck extends React.Component<
     return (
       <div className={styles.abcLicCheck}>
         <Navigation
-          handlePageButton={this.handlePageButton}
-          handleOptionButton={this.handleOptionButton}
           state={this.state}
+          handlePageOption={this.handlePageOption}
+          handlePageButton={this.handlePageButton}
+          handleOptionsButton={this.handleOptionsButton}
         />
         <div className={styles.contentContainer}>{this.handlePage()}</div>
       </div>
     );
   }
 }
+
 
 const NavOptions:any = {
     options: [
@@ -86,6 +99,10 @@ const NavOptions:any = {
       },
     ],
     reports: [
+      {
+        name: "dashboard",
+        formalName: "Dashboard",
+      },
       {
         name: "status changes",
         formalName: "Status Changes",
