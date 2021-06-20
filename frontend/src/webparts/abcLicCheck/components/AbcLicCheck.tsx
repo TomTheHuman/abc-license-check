@@ -1,5 +1,5 @@
 import * as React from "react";
-import styles from "./AbcLicCheck.module.scss";
+import styles from "./styles/AbcLicCheck.module.scss";
 import { IAbcLicCheckProps } from "./IAbcLicCheckProps";
 import { IAbcLicCheckState, Page } from "./IAbcLicCheckState";
 import Navigation from "./Navigation";
@@ -29,7 +29,6 @@ export default class AbcLicCheck extends React.Component<
   }
 
   private handlePage() {
-
     switch (this.state.currentPage.name) {
       case "dashboard":
         return <Dashboard state={this.state} />;
@@ -51,20 +50,17 @@ export default class AbcLicCheck extends React.Component<
   }
 
   private handlePageButton() {
-    this.setState(
-      {
-        repMenuOpen: !this.state.repMenuOpen,
-        optMenuOpen: false,
-      });
+    this.setState({
+      repMenuOpen: !this.state.repMenuOpen,
+      optMenuOpen: false,
+    });
   }
 
   private handleOptionsButton() {
-    this.setState(
-      {
-        repMenuOpen: false,
-        optMenuOpen: !this.state.optMenuOpen,
-      }
-    );
+    this.setState({
+      repMenuOpen: false,
+      optMenuOpen: !this.state.optMenuOpen,
+    });
   }
 
   public render(): React.ReactElement<IAbcLicCheckProps> {
@@ -82,38 +78,37 @@ export default class AbcLicCheck extends React.Component<
   }
 }
 
-
-const NavOptions:any = {
-    options: [
-      {
-        name: "manage territories",
-        formalName: "Manage Territories",
-      },
-      {
-        name: "email recipients",
-        formalName: "Email Recipients",
-      },
-      {
-        name: "download logs",
-        formalName: "Download Logs",
-      },
-    ],
-    reports: [
-      {
-        name: "dashboard",
-        formalName: "Dashboard",
-      },
-      {
-        name: "status changes",
-        formalName: "Status Changes",
-      },
-      {
-        name: "issued licenses",
-        formalName: "Issued Licenses",
-      },
-      {
-        name: "new applications",
-        formalName: "New Applications",
-      },
-    ]
-  }
+const NavOptions: any = {
+  options: [
+    {
+      name: "manage territories",
+      formalName: "Manage Territories",
+    },
+    {
+      name: "email recipients",
+      formalName: "Email Recipients",
+    },
+    {
+      name: "download logs",
+      formalName: "Download Logs",
+    },
+  ],
+  reports: [
+    {
+      name: "dashboard",
+      formalName: "Dashboard",
+    },
+    {
+      name: "status changes",
+      formalName: "Status Changes",
+    },
+    {
+      name: "issued licenses",
+      formalName: "Issued Licenses",
+    },
+    {
+      name: "new applications",
+      formalName: "New Applications",
+    },
+  ],
+};
