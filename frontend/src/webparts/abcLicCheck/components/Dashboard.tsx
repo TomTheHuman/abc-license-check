@@ -1,10 +1,11 @@
 import * as React from "react";
 import styles from "./styles/Dashboard.module.scss";
+import Table from "./Table";
 
-const Dashboard = ({ state }) => {
+const Dashboard = ({ data, state }) => {
   return (
     <div className={styles.dashboard}>
-      <h1>Dashboard data...</h1>
+      <Table data={data} />
     </div>
   );
 };
