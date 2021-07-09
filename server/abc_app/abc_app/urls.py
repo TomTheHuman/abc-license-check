@@ -26,19 +26,25 @@ urlpatterns = [
 
     # API ACTIONS
     path('api/v1/actions', action.ActionList.as_view()),
+    path('api/v1/actions/new', action.ActionCreate.as_view()),
 
     # API DISTRICTS
     path('api/v1/districts', district.DistrictList.as_view()),
+    path('api/v1/districts/new', district.DistrictCreate.as_view()),
 
-    # API DISTRICTS
+    # API STATUSES
     path('api/v1/statuses', status.StatusList.as_view()),
+    path('api/v1/statuses/new', status.StatusCreate.as_view()),
 
     # API RECIPIENTS
     path('api/v1/recipients', recipient.RecipientList.as_view()),
+    path('api/v1/recipients/new', recipient.RecipientCreate.as_view()),
 
     # API REPORTS
     path('api/v1/reports', report.ReportList.as_view()),
+    path('api/v1/reports/new', report.ReportCreate.as_view()),
 
     # API ADMINS
     path('api/v1/admins', admins.AdminList.as_view()),
+    path('api/v1/admins/new', admins.AdminCreate.as_view())
 ]

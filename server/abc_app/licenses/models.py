@@ -3,6 +3,12 @@ from django.db.models.fields import related
 
 # TODO Need to update report import process to reflect report model with type
 
+REPORT_TYPE_CHOICES = (
+    ("status change", "Status Change"),
+    ("new application", "New Application"),
+    ("issued license", "Issued License")
+)
+
 
 class Action(models.Model):
     code = models.CharField(primary_key=True, max_length=48, null=False)
@@ -20,13 +26,13 @@ class Status(models.Model):
 
 
 class Recipient(models.Model):
-    username = models.EmailField(primary_key=True, max_length=255)
+    email_address = models.EmailField(primary_key=True, max_length=255)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
 
 
 class Admin(models.Model):
-    username = models.EmailField(primary_key=True, max_length=255)
+    email_address = models.EmailField(primary_key=True, max_length=255)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
 
@@ -34,7 +40,8 @@ class Admin(models.Model):
 class Report(models.Model):
     id = models.AutoField(primary_key=True, null=False, auto_created=True)
     created = models.DateTimeField(auto_now_add=True)
-    report_type = models.CharField(max_length=255, null=False)
+    report_type = models.CharField(
+        max_length=255, null=False, choices=REPORT_TYPE_CHOICES, default='status_change')
     lic_num = models.IntegerField(null=False)
     status_from = models.ForeignKey(
         Status, on_delete=models.PROTECT, related_name="status_from")
