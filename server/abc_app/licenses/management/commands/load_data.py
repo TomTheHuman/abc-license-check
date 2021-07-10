@@ -15,23 +15,23 @@ class Command(BaseCommand):
         for row in DictReader(open('./data/seed/actions.csv')):
             action = Action()
             print(row)
-            action.action_code = row['code']
-            action.action_description = row['description']
+            action.code = row['code']
+            action.description = row['description']
             action.save()
         print("\n")
 
         print("Loading Districts...")
         for row in DictReader(open('./data/seed/districts.csv')):
             district = District()
-            district.district_code = row['code']
-            district.district_description = row['description']
+            district.code = row['code']
+            district.description = row['description']
             district.save()
         print("\n")
 
         print("Loading Recipients...")
         for row in DictReader(open('./data/seed/recipients.csv')):
             recipient = Recipient()
-            recipient.username = row['username']
+            recipient.email_address = row['email_address']
             recipient.first_name = row['first_name']
             recipient.last_name = row['last_name']
             recipient.save()
@@ -40,7 +40,7 @@ class Command(BaseCommand):
         print("Loading Statuses...")
         for row in DictReader(open('./data/seed/statuses.csv')):
             status = Status()
-            status.status_code = row['code']
-            status.status_description = row['description']
+            status.code = row['code']
+            status.description = row['description']
             status.save()
         print("\n")

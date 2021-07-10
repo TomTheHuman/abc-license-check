@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.exceptions import ValidationError
 from licenses.serializers import RecipientSerializer
@@ -45,3 +45,28 @@ class RecipientCreate(CreateAPIView):
                                    'last_name': 'A valid last name is required.'})
 
         return super().create(request, *args, **kargs)
+
+class RecipientRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
+    queryset = Recipient.objects.all()
+    lookup_field = 'id'
+    serializer_class = RecipientSerializer
+
+    def delete(self, request, *args, **kargs):
+        recipient_id = request.data.get("id")
+        response = super().delete(request, *args, **kargs)
+        if response.status_code == 204:
+            from django.core.cache import cache
+            cache.delete('recipient_data_{}'.format(recipient_id))
+        return response
+
+    def update(self, request, *args, **kargs):
+        response = super().update(request, *args, **kargs)
+        if response.status_code == 200:
+            from django.core.cache import cache
+            recipient = response.data
+            cache.set('recipient_data_{}'.format(recipient['id']), {
+                'email_address': recipient['email_address'],
+                'first_name': recipient['first_name'],
+                'last_name': recipient['last_name'],
+            })
+        return response

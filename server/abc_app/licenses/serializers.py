@@ -24,13 +24,13 @@ class StatusSerializer(serializers.ModelSerializer):
 class RecipientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipient
-        fields = ['username', 'first_name', 'last_name']
+        fields = ['id', 'email_address', 'first_name', 'last_name']
 
 
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
-        fields = ['username', 'first_name', 'last_name']
+        fields = ['id', 'email_address', 'first_name', 'last_name']
 
 
 class ReportSerializer(serializers.ModelSerializer):
@@ -38,6 +38,7 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ['id',
                   'created',
+                  'report_type',
                   'lic_num',
                   'status_from',
                   'status_to',

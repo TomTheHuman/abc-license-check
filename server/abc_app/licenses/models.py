@@ -4,9 +4,9 @@ from django.db.models.fields import related
 # TODO Need to update report import process to reflect report model with type
 
 REPORT_TYPE_CHOICES = (
-    ("status change", "Status Change"),
-    ("new application", "New Application"),
-    ("issued license", "Issued License")
+    ("status_change", "Status Change"),
+    ("new_application", "New Application"),
+    ("issued_license", "Issued License")
 )
 
 
@@ -18,6 +18,7 @@ class Action(models.Model):
 class District(models.Model):
     code = models.IntegerField(primary_key=True, null=False)
     description = models.CharField(max_length=255, null=False)
+    in_territory = models.BooleanField(default=False)
 
 
 class Status(models.Model):
@@ -27,14 +28,14 @@ class Status(models.Model):
 
 class Recipient(models.Model):
     id = models.AutoField(primary_key=True, auto_created=True)
-    email_address = models.EmailField(max_length=255, null=False)
+    email_address = models.EmailField(max_length=255, null=False, unique=True)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
 
 
 class Admin(models.Model):
     id = models.AutoField(primary_key=True, auto_created=True)
-    email_address = models.EmailField(max_length=255, null=False)
+    email_address = models.EmailField(max_length=255, null=False, unique=True)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
 

@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.exceptions import ValidationError
 from licenses.serializers import DistrictSerializer
@@ -41,3 +41,26 @@ class DistrictCreate(CreateAPIView):
                 {'code': 'A valid code is required.', 'description': 'A valid description is required.'})
 
         return super().create(request, *args, **kargs)
+
+class DistrictRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
+    queryset = District.objects.all()
+    lookup_field = 'code'
+    serializer_class = DistrictSerializer
+
+    def delete(self, request, *args, **kargs):
+        district_code = request.data.get("code")
+        response = super().delete(request, *args, **kargs)
+        if response.status_code == 204:
+            from django.core.cache import cache
+            cache.delete('district_data_{}'.format(district_code))
+        return response
+
+    def update(self, request, *args, **kargs):
+        response = super().update(request, *args, **kargs)
+        if response.status_code == 200:
+            from django.core.cache import cache
+            district = response.data
+            cache.set('district_data_{}'.format(district['code']), {
+                'description': district['description']
+            })
+        return response

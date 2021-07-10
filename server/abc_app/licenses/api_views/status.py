@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.exceptions import ValidationError
 from licenses.serializers import StatusSerializer
@@ -41,3 +41,26 @@ class StatusCreate(CreateAPIView):
                 {'code': 'A valid code is required.', 'description': 'A valid description is required.'})
 
         return super().create(request, *args, **kargs)
+
+class StatusRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
+    queryset = Status.objects.all()
+    lookup_field = 'code'
+    serializer_class = StatusSerializer
+
+    def delete(self, request, *args, **kargs):
+        status_code = request.data.get("code")
+        response = super().delete(request, *args, **kargs)
+        if response.status_code == 204:
+            from django.core.cache import cache
+            cache.delete('status_data_{}'.format(status_code))
+        return response
+
+    def update(self, request, *args, **kargs):
+        response = super().update(request, *args, **kargs)
+        if response.status_code == 200:
+            from django.core.cache import cache
+            status = response.data
+            cache.set('status_data_{}'.format(status['code']), {
+                'description': status['description']
+            })
+        return response
