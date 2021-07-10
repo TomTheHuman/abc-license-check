@@ -26,13 +26,15 @@ class Status(models.Model):
 
 
 class Recipient(models.Model):
-    email_address = models.EmailField(primary_key=True, max_length=255)
+    id = models.AutoField(primary_key=True, auto_created=True)
+    email_address = models.EmailField(max_length=255, null=False)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
 
 
 class Admin(models.Model):
-    email_address = models.EmailField(primary_key=True, max_length=255)
+    id = models.AutoField(primary_key=True, auto_created=True)
+    email_address = models.EmailField(max_length=255, null=False)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
 
