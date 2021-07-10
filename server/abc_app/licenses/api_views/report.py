@@ -14,6 +14,7 @@ class ReportPagination(LimitOffsetPagination):
 
 
 class ReportList(ListAPIView):
+    queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
     # PAGINATION
@@ -101,7 +102,7 @@ class ReportRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
                 'mail_zip': report['mail_zip'],
                 'conditions': report['conditions'],
                 'escrow_addr': report['escrow_addr'],
-                'district_code': report['district_code'],
+                'district': report['district'],
                 'trans_from': report['trans_from'],
                 'trans_to': report['trans_to'],
                 'geocode': report['geocode']

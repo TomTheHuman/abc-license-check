@@ -59,7 +59,7 @@ class ReportSerializer(serializers.ModelSerializer):
                   'mail_zip',
                   'conditions',
                   'escrow_addr',
-                  'district_code',
+                  'district',
                   'trans_from',
                   'trans_to',
                   'geocode']

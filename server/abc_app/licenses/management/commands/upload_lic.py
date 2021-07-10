@@ -1,12 +1,13 @@
 from os import error
-import db
+# import db
 import csv
-import mysql.connector
-from mysql.connector import Error
+# import mysql.connector
+# from mysql.connector import Error
 import datetime
+from django.utils import timezone
 from django.core.management import BaseCommand
 
-from licenses.models import StatusChange, NewApplication, IssuedLicense
+from licenses.models import Report, Action, District, Status
 
 class Command(BaseCommand):
 
@@ -45,22 +46,31 @@ class Command(BaseCommand):
                 format_str = '%m/%d/%Y'
                 for row in data_reader:
                     # Initialize new dict to store row data
-                    status_change = StatusChange()
+                    status_change = Report()
+                    status_change.report_type = "Status Change"
                     status_change.lic_num = int(row[0].strip())
-                    status_change.status_from = row[1][:(row[1].find(' '))].strip()
-                    status_change.status_to = row[1][(row[1].find(' ') + 1):].strip()
+
+                    status_code = row[1][:(row[1].find(' '))].strip()
+                    status_from = Status.objects.get(code=status_code)
+                    status_change.status_from = status_from
+
+                    status_code = row[1][(row[1].find(' ') + 1):].strip()
+                    status_to = Status.objects.get(code=status_code)
+                    status_change.status_to = status_to
+
                     status_change.lic_type = int(row[2][:(row[2].find(' '))].strip())
                     status_change.lic_dup = int(row[2][(row[2].find('|') + 1):].strip()) 
                     
                     # Strips datetime string from report and formats using format_str definition above (if column string not empty)
                     # If the above step resulted in a value (not empty string) datetime is converted to MySQL date format, otherwise None value set
+
                     datetime_issue = datetime.datetime.strptime(row[3].strip(), format_str) if row[3].strip() != '' and len(row[3]) > 0 else ''
-                    status_change.issue_date = datetime_issue.strftime('%Y-%m-%d') if datetime_issue != '' else None
+                    status_change.issue_date = datetime_issue.strftime('%Y-%m-%d %H:%M:%S') if datetime_issue != '' else None
 
                     # Strips datetime string from report and formats using format_str definition above (if column string not empty)
                     # If the above step resulted in a value (not empty string) datetime is converted to MySQL date format, otherwise None value set
                     datetime_exp = datetime.datetime.strptime(row[4].strip(), format_str) if row[4].strip() != '' and len(row[4]) > 0 else ''
-                    status_change.exp_date = datetime_exp.strftime('%Y-%m-%d') if datetime_exp != '' else None
+                    status_change.exp_date = datetime_exp.strftime('%Y-%m-%d %H:%M:%S') if datetime_exp != '' else None
                     
                     # Local list variable created to store delimitted values from Primary Owner and Premises Addr. report column
                     # This column will sometimes include the account name (with "DBA: " prefix)
@@ -82,13 +92,7 @@ class Command(BaseCommand):
                             acct_stateZip = acct_cityStateZip.split(', ')[1]
                             status_change.acct_state = acct_stateZip[:2].strip()
                             status_change.acct_zip = acct_stateZip[4:].strip()
-                        else:
-                            status_change.acct_street = None
-                            status_change.acct_city = None
-                            status_change.acct_state = None
-                            status_change.acct_zip = None
                     else:
-                        status_change.acct_name = None
                         status_change.acct_own = prim_own_addr[0].strip()
                         
                         # If the primary address has been omitted, the report leaves the comma-separator for street and city
@@ -102,11 +106,6 @@ class Command(BaseCommand):
                             acct_stateZip = acct_cityStateZip.split(', ')[1]
                             status_change.acct_state = acct_stateZip[:2].strip()
                             status_change.acct_zip = acct_stateZip[4:].strip()
-                        else:
-                            status_change.acct_street = None
-                            status_change.acct_city = None
-                            status_change.acct_state = None
-                            status_change.acct_zip = None
                         
                     # Local list variable created to store delimitted values from Mailing Addr. report column
                     # This column will either contain the full address string or an empty string
@@ -123,35 +122,29 @@ class Command(BaseCommand):
                         status_change.mail_zip = mail_stateZip[4:].strip()
                     elif len(mail_addr) > 0 and not mail_addr[0] == None:
                         status_change.mail_street = mail_addr[0].strip()
-                        status_change.mail_city = None
-                        status_change.mail_state = None
-                        status_change.mail_zip = None
-                    else:
-                        status_change.mail_street = None
-                        status_change.mail_city = None
-                        status_change.mail_state = None
-                        status_change.mail_zip = None
 
                     # Local list variable created to store separated values from Trans From / To
                     # Both values separated by forward slash
                     # This column sometimes contains no values, a from value, or a from and to value
                     # Logic handles the above cases and sets omitted values to None where applicable
                     trans_from_to = row[7].split('/ ')
-                    if len(trans_from_to) == 0:
-                        status_change.trans_from = None
-                        status_change.trans_to = None
-                    elif len(trans_from_to) == 1:
+                    if len(trans_from_to) == 1 and len(trans_from_to[0]) > 0:
                         status_change.trans_from = trans_from_to[0].strip()
                         status_change.trans_to = None
                     elif len(trans_from_to) == 2:
                         status_change.trans_from = trans_from_to[0].strip()
                         status_change.trans_to = trans_from_to[1].strip()
 
+                    code = int(row[10].strip())
+                    district = District.objects.get(code=code)
+                    status_change.district = district
+
                     # If the column below is not an empty string, it is stored as dict value
                     # If string is empty, value is set to None
                     status_change.geocode = int(row[11]) if len(row[11]) > 0 else None
 
-                status_change.save()
+                    status_change.save()
+
 
         except IOError:
             print('There was a problem opening report_status_changes.csv. The file may not exist in the data directory.')
@@ -265,7 +258,7 @@ class Command(BaseCommand):
     #                 item['action'] = row[6] if len(row[6]) > 0 else None
     #                 item['conditions'] = row[7] if len(row[7]) > 0 else None
     #                 item['escrow_addr'] = row[8] if len(row[8]) > 0 else None
-    #                 item['district_code'] = int(row[9]) if len(row[9]) > 0 else None
+    #                 item['district'] = int(row[9]) if len(row[9]) > 0 else None
     #                 item['geocode'] = int(row[10]) if len(row[10]) > 0 else None
 
     #                 data_issued_licenses.append(item)
@@ -383,7 +376,7 @@ class Command(BaseCommand):
     #                 item['action'] = row[6] if len(row[6]) > 0 else None
     #                 item['conditions'] = row[7] if len(row[7]) > 0 else None
     #                 item['escrow_addr'] = row[8] if len(row[8]) > 0 else None
-    #                 item['district_code'] = int(row[9]) if len(row[9]) > 0 else None
+    #                 item['district'] = int(row[9]) if len(row[9]) > 0 else None
     #                 item['geocode'] = int(row[10]) if len(row[10]) > 0 else None
 
     #                 data_new_applications.append(item)
@@ -484,7 +477,7 @@ class Command(BaseCommand):
     #         action,
     #         conditions,
     #         escrow,
-    #         district_code,
+    #         district,
     #         geocode
     #     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
 
@@ -543,7 +536,7 @@ class Command(BaseCommand):
     #         action,
     #         conditions,
     #         escrow,
-    #         district_code,
+    #         district,
     #         geocode
     #     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
 

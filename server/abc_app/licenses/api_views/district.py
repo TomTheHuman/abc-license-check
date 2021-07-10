@@ -48,11 +48,11 @@ class DistrictRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     serializer_class = DistrictSerializer
 
     def delete(self, request, *args, **kargs):
-        district_code = request.data.get("code")
+        district = request.data.get("code")
         response = super().delete(request, *args, **kargs)
         if response.status_code == 204:
             from django.core.cache import cache
-            cache.delete('district_data_{}'.format(district_code))
+            cache.delete('district_data_{}'.format(district))
         return response
 
     def update(self, request, *args, **kargs):
