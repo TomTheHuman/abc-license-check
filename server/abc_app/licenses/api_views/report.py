@@ -17,15 +17,11 @@ class ReportList(ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
-    # PAGINATION
-    pagination_class = ReportPagination
 
 class ReportByTypeList(ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
-    # PAGINATION
-    pagination_class = ReportPagination
 
     def get_queryset(self):
         type = self.kwargs['type']

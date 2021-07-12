@@ -1,12 +1,13 @@
 export interface Page {
+  key: number;
+  text: string;
   name: string;
-  formalName: string;
+  type: string;
+  data: Array<any>;
 }
 
 export interface IAbcLicCheckState {
   currentPage: Page;
-  repMenuOpen: boolean;
-  optMenuOpen: boolean;
-  options: Array<any>;
-  pages: Array<any>;
+  menuOptions: Array<Page>;
+  reports: Array<Page>;
 }

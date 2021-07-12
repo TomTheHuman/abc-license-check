@@ -1,10 +1,10 @@
 import * as React from "react";
 import styles from "./styles/Report.module.scss";
 
-const Report = ({ report }) => {
+const Report = ({ state }) => {
   return (
-    <div className={styles.report}>
-      <h1>{report.formalName} data...</h1>
+    <div className={""}>
+      <h1>{state.currentPage.text} data...</h1>
     </div>
   );
 };

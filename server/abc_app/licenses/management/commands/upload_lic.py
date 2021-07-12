@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 for row in data_reader:
                     # Initialize new dict to store row data
                     status_change = Report()
-                    status_change.report_type = "Status Change"
+                    status_change.report_type = "status_change"
                     status_change.lic_num = int(row[0].strip())
 
                     status_code = row[1][:(row[1].find(' '))].strip()

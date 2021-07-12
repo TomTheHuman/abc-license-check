@@ -17,90 +17,42 @@ $ms-color-red: #d13438;
 $box-shaddow: 0px 2px 5px rgba(0, 0, 0, 0.45);
 
 .nav {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-
-  padding: 10px;
   box-sizing: border-box;
   background-color: $ms-color-neutralPrimaryAlt;
-
-  .navButton {
-    border: none;
-    border-radius: 5px;
-    padding: 10px;
-    font-weight: 200;
-    font-size: 1.1em;
+  padding: 8px 0px;
+  
+  .dropdownCtnr {
     width: 100%;
-  }
 
-  .navButton:hover {
-    filter: brightness(120%);
-    box-shadow: $box-shaddow;
-  }
-
-  .dropDown {
-    position: relative;
-    display: inline-block;
-
-    .pageDropBtn {
-      background-color: $ms-color-neutralSecondary;
-      color: white;
-    }
-
-    .optDropBtn {
-      background-color: $ms-color-redDark;
-      color: white;
-    }
-
-    .dropDownContent {
-      text-align: left;
-      position: absolute;
-      background-color: white;
-      display: block;
+    .dropdown {
       width: 100%;
-      border-radius: 0px 0px 10px 10px;
-      background-color: $ms-color-neutralPrimaryAlt;
-      box-shadow: $box-shaddow;
-
-      .dropDownOption {
-        font-size: 1em;
-        text-decoration: none;
-        padding: 15px;
-        display: block;
-        text-decoration: none;
-        color: white;
-        margin: 10px;
-        border-radius: 5px;
-        background-color: $ms-color-neutralPrimaryAlt;
-
-        &:hover {
-          filter: brightness(150%);
-        }
-      }
     }
   }
 
-  .pageDropDown {
-    width: 30%;
-    text-align: left;
-  }
-
-  .optDropDown {
-    width: 25%;
-    text-align: right;
-  }
-
-  .pageTitle {
-    display: flex;
+  .navTitleCtnr{
     align-items: center;
-    justify-content: center;
-    width: 45%;
+    text-align: center;
 
-    .pageTitleText {
+    .navTitleLabel {
       font-size: 1.2em;
       color: white;
       margin: 0px;
     }
   }
+
+  .navMenuCtnr {
+    text-align: right;
+    align-items: center;
+
+    .navMenuIcon {
+      font-size: 1.5em;
+      color: $ms-color-neutralTertiaryAlt;
+
+      :hover {
+        color: white;
+      }
+    }
+  }
+
+
 }

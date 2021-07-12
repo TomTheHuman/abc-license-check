@@ -5,14 +5,18 @@ import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField
 } from '@microsoft/sp-property-pane';
-import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
+import { BaseClientSideWebPart, WebPartContext } from '@microsoft/sp-webpart-base';
 
 import * as strings from 'AbcLicCheckWebPartStrings';
 import AbcLicCheck from './components/AbcLicCheck';
 import { IAbcLicCheckProps } from './components/IAbcLicCheckProps';
 
+import { initializeIcons } from '@fluentui/font-icons-mdl2';
+initializeIcons();
+
 export interface IAbcLicCheckWebPartProps {
   description: string;
+  context: WebPartContext;
 }
 
 export default class AbcLicCheckWebPart extends BaseClientSideWebPart<IAbcLicCheckWebPartProps> {
@@ -22,6 +26,7 @@ export default class AbcLicCheckWebPart extends BaseClientSideWebPart<IAbcLicChe
       AbcLicCheck,
       {
         description: this.properties.description,
+        context: this.context,
       },
     );
 

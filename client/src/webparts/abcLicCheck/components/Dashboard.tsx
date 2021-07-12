@@ -2,10 +2,10 @@ import * as React from "react";
 import styles from "./styles/Dashboard.module.scss";
 import Table from "./Table";
 
-const Dashboard = ({ data, state }) => {
+const Dashboard = ({ state }) => {
   return (
-    <div className={styles.dashboard}>
-      <Table data={data} />
+    <div className={""}>
+      <Table />
     </div>
   );
 };

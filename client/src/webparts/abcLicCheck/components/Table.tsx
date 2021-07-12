@@ -48,8 +48,8 @@ interface Data {
   geocode: string;
 }
 
-const DataTable = ({ data }) => {
-  return <div className={styles.tableContainer}></div>;
+const DataTable = ({ }) => {
+  return <div className={""}></div>;
 };
 
 export default DataTable;

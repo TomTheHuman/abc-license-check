@@ -6,12 +6,14 @@
   "engines": {
     "node": ">=0.10.0"
   },
+  "proxy": "http://localhost:8000",
   "scripts": {
     "build": "gulp bundle",
     "clean": "gulp clean",
     "test": "gulp test"
   },
   "dependencies": {
+    "@fluentui/react": "^8.22.3",
     "@material-ui/core": "^4.11.4",
     "@material-ui/icons": "^4.11.2",
     "@microsoft/sp-core-library": "1.11.0",
@@ -19,6 +21,7 @@
     "@microsoft/sp-office-ui-fabric-core": "1.11.0",
     "@microsoft/sp-property-pane": "1.11.0",
     "@microsoft/sp-webpart-base": "1.11.0",
+    "axios": "^0.21.1",
     "datatables.net-dt": "^1.1.0",
     "material-table": "^1.69.3",
     "office-ui-fabric-react": "6.214.0",

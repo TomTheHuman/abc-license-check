@@ -3,79 +3,37 @@ import styles from "./styles/Navigation.module.scss";
 import { IAbcLicCheckProps } from "./IAbcLicCheckProps";
 import { escape } from "@microsoft/sp-lodash-subset";
 import { PropertyPaneSlider } from "@microsoft/sp-property-pane";
-import { PrimaryButton } from "office-ui-fabric-react";
+import { Dropdown, IDropdownOption, IconButton, IIconProps, Label } from "office-ui-fabric-react";
 
-// TODO Add logic to hide menus when user clicks anywhere else on page
+// TODO Add motion slide out menu when button clicked
+// TODO Map options to slide out menu
 
 const Navigation = ({
   state,
-  handlePageOption,
-  handlePageButton,
-  handleOptionsButton,
+  setPage,
 }) => {
+ 
+  const menuIcon: IIconProps = { iconName: 'CollapseMenu'}
+
   return (
-    <div className={styles.nav}>
-      <div className={`${styles.dropDown} ${styles.pageDropDown}`}>
-        <button
-          className={`${styles.navButton} ${styles.pageDropBtn}`}
-          onClick={() => handlePageButton()}
-        >
-          Reports
-        </button>
-        <div className={styles.dropDownContent} onClick={handlePageButton}>
-          <GetPageOptions state={state} handlePageOption={handlePageOption} />
-        </div>
+    <div className={`${styles.nav} ms-Grid-row`}>
+      <div className={`${styles.dropdownCtnr} ms-Grid-col ms-sm6 ms-md6 ms-lg4`}>
+        <Dropdown 
+          className={`${styles.dropdown}`}
+          placeholder="Select report..."
+          selectedKey={state.currentPage.key} 
+          options={state.reports} 
+          onChange={(e, item) => setPage(item)}
+        />
       </div>
-      <div className={styles.pageTitle}>
-        <h1 className={styles.pageTitleText}>{state.currentPage.formalName}</h1>
+      <div className={`${styles.navTitleCtnr} ms-Grid-col ms-lg4`}>
+        <Label className={`${styles.navTitleLabel} ms-fontSize-28 ms-fontWeight-semibold`}>{state.currentPage.text}</Label>
       </div>
-      <div className={`${styles.dropDown} ${styles.optDropDown}`}>
-        <button
-          className={`${styles.navButton} ${styles.optDropBtn}`}
-          onClick={() => handleOptionsButton()}
-        >
-          Options
-        </button>
-        <div className={styles.dropDownContent} onClick={handleOptionsButton}>
-          <GetOptions state={state} handlePageOption={handlePageOption} />
-        </div>
+      <div className={`${styles.navMenuCtnr} ms-Grid-col ms-sm6 ms-md6 ms-lg4`}>
+        <IconButton className={styles.navMenuIcon} iconProps={menuIcon} title="Menu" ariaLabel="Menu"></IconButton>
       </div>
     </div>
   );
-};
-
-const GetPageOptions = ({ state, handlePageOption }) => {
-  const buttons = state.pages.map((report) => {
-    return (
-      <a
-        href="#"
-        key={report.name.trim()}
-        className={styles.dropDownOption}
-        onClick={() => handlePageOption(report)}
-      >
-        {report.formalName}
-      </a>
-    );
-  });
-
-  return state.repMenuOpen && buttons;
-};
-
-const GetOptions = ({ state, handlePageOption }) => {
-  let buttons = state.options.map((option) => {
-    return (
-      <a
-        href="#"
-        key={option.name.trim()}
-        className={styles.dropDownOption}
-        onClick={() => handlePageOption(option)}
-      >
-        {option.formalName}
-      </a>
-    );
-  });
-
-  return state.optMenuOpen && buttons;
 };
 
 export default Navigation;
