@@ -1,10 +1,11 @@
 import * as React from "react";
+import { DataList } from "./DataList";
 import styles from "./styles/Report.module.scss";
 
-const Report = ({ state }) => {
+const Report = ({ report }) => {
   return (
-    <div className={""}>
-      <h1>{state.currentPage.text} data...</h1>
+    <div className={styles.report}>
+      <DataList report={report} />
     </div>
   );
 };

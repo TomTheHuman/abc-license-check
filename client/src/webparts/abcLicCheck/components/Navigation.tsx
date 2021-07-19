@@ -13,7 +13,7 @@ const Navigation = ({
   setPage,
 }) => {
  
-  const menuIcon: IIconProps = { iconName: 'CollapseMenu'}
+  const menuIcon: IIconProps = { iconName: 'CollapseMenu'};
 
   return (
     <div className={`${styles.nav} ms-Grid-row`}>
