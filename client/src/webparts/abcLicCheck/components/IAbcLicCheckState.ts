@@ -3,7 +3,16 @@ export interface Page {
   text: string;
   name: string;
   type: string;
-  data: Array<any>;
+  data: Array<Object>;
+}
+
+export interface Report {
+  key: number;
+  text: string;
+  name: string;
+  type: string;
+  data: Array<Object>;
+  headers: Array<Object>;
 }
 
 export interface IAbcLicCheckState {

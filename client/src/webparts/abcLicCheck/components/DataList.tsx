@@ -4,7 +4,7 @@ import { Toggle } from '@fluentui/react/lib/Toggle';
 import { Announced } from '@fluentui/react/lib/Announced';
 import { DetailsList, DetailsListLayoutMode, Selection, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
 import { MarqueeSelection } from '@fluentui/react/lib/MarqueeSelection';
-import { ThemeProvider } from "office-ui-fabric-react";
+import { Dropdown, IDropdownOption, IIconProps, IconButton, ThemeProvider } from "office-ui-fabric-react";
 import  styles  from './styles/DetailsList.module.scss'
 import { StylesProvider } from "@material-ui/styles";
 
@@ -16,6 +16,8 @@ export interface DetailsListState {
   selectionDetails: string;
   isModalSelection: boolean;
   isCompactMode: boolean;
+  isToday: boolean;
+  showControl: boolean;
   announcedMessage?: string;
   report: Array<Object>;
 }
@@ -54,11 +56,13 @@ export interface IItem {
 export class DataList extends React.Component<{ report }, DetailsListState> {
   private _selection: Selection;
   private _allItems: IItem[];
+  private _headers: Array<string>;
 
   constructor(props: { report }) {
     super(props);
 
-    this._allItems = this.props.report;
+    this._allItems = this.props.report.data;
+    this._headers = this.props.report.headers;
 
     // TODO Adjust default min and max widths for each column
     const columns: Object = {
@@ -506,7 +510,7 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
         },
     };
 
-    const filteredColumns = this._filterColumns(columns);
+    const filteredColumns = this._filterColumns(columns, this._headers);
 
     this._selection = new Selection({
       onSelectionChanged: () => {
@@ -523,72 +527,115 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
       selectionDetails: this._getSelectionDetails(),
       isModalSelection: false,
       isCompactMode: false,
+      isToday: true,
+      showControl: false,
       announcedMessage: undefined,
       report: this.props.report,
     };
   }
 
-  public render() {
-    const { columns, filteredColumns, isCompactMode, items, selectionDetails, isModalSelection, announcedMessage } = this.state;
+  
 
+  public render() {
+    const { columns, filteredColumns, isCompactMode, items, selectionDetails, isModalSelection, isToday, showControl, announcedMessage } = this.state;
+    const filterIcon: IIconProps = { iconName: 'FilterSettings'};
+    
     return (
       <ThemeProvider>
-        <div className={styles.controlWrapper}>
-          <Toggle
-            label="Enable compact mode"
-            checked={isCompactMode}
-            onChange={this._onChangeCompactMode}
-            onText="Compact"
-            offText="Normal"
-            className={styles.control}
-          />
-          <Toggle
-            label="Enable modal selection"
-            checked={isModalSelection}
-            onChange={this._onChangeModalSelection}
-            onText="Modal"
-            offText="Normal"
-            className={styles.control}
-          />
-          <TextField label="Filter by name:" onChange={this._onChangeText} className={styles.control} />
-          <Announced message={`Number of items after filter applied: ${items.length}.`} />
+        {(showControl && <div className={`${styles.controlWrapper} ${showControl ? 'ms-slideDownIn20' : 'ms-slideDownOut'} ms-Grid`}>
+          <div className={`${styles.controlRow} ms-Grid-row`}>
+            <div className={`ms-Grid-col ms-sm4 ms-md4 ms-lg-2`}>
+              <Toggle
+                label="Enable compact mode"
+                checked={isCompactMode}
+                onChange={this._onChangeCompactMode}
+                onText="Compact"
+                offText="Normal"
+                className={styles.control}
+              />
+            </div>
+            <div className={`ms-Grid-col ms-sm4 ms-md4 ms-lg-2`}>
+              <Toggle
+                label="Enable modal selection"
+                checked={isModalSelection}
+                onChange={this._onChangeModalSelection}
+                onText="Modal"
+                offText="Normal"
+                className={styles.control}
+              />
+            </div>
+            <div className={`ms-Grid-col ms-sm4 ms-md4 ms-lg-8`}>
+              <Toggle
+                label="Change report range"
+                checked={isToday}
+                onChange={this._onChangeViewToday}
+                onText="Today"
+                offText="All"
+                className={styles.control}
+              />
+            </div>
+          </div>
+          <div className={`${styles.controlRow} ms-Grid-row`}>
+            <div className={`ms-Grid-col ms-md4 ms-lg-8`}>
+              <TextField label="Filter by name:" onChange={this._onChangeText} className={styles.control} />
+              <Announced message={`Number of items after filter applied: ${items.length}.`} />
+            </div>
+            <div className={`ms-Grid-col ms-md4 ms-lg-8`}>
+              <TextField label="Filter by name:" onChange={this._onChangeText} className={styles.control} />
+              <Announced message={`Number of items after filter applied: ${items.length}.`} />
+            </div>
+            <div className={`ms-Grid-col ms-md4 ms-lg-8`}>
+              <TextField label="Filter by name:" onChange={this._onChangeText} className={styles.control} />
+              <Announced message={`Number of items after filter applied: ${items.length}.`} />
+            </div>
+          </div>
         </div>
+        )}
         <div className={styles.selectionDetails}>{selectionDetails}</div>
         <Announced message={selectionDetails} />
         {announcedMessage ? <Announced message={announcedMessage} /> : undefined}
-        {isModalSelection ? (
-          <MarqueeSelection selection={this._selection}>
-            <DetailsList
-              items={items}
-              compact={isCompactMode}
-              columns={filteredColumns}
-              selectionMode={SelectionMode.multiple}
-              getKey={this._getId}
-              setKey="multiple"
-              layoutMode={DetailsListLayoutMode.justified}
-              isHeaderVisible={true}
-              selection={this._selection}
-              selectionPreservedOnEmptyClick={true}
-              onItemInvoked={this._onItemInvoked}
-              enterModalSelectionOnTouch={true}
-              ariaLabelForSelectionColumn="Toggle selection"
-              ariaLabelForSelectAllCheckbox="Toggle selection for all items"
-              checkButtonAriaLabel="Row checkbox"
-            />
-          </MarqueeSelection>
-        ) : (
-          <DetailsList
-            items={items}
-            compact={isCompactMode}
-            columns={filteredColumns}
-            selectionMode={SelectionMode.none}
-            getKey={this._getId}
-            setKey="none"
-            layoutMode={DetailsListLayoutMode.justified}
-            isHeaderVisible={true}
-            onItemInvoked={this._onItemInvoked}
-          />
-        )}
+        <div className={`ms-Grid-row`} dir="rtl">
+          <div className={`ms-Grid-col ms-sm12`}>
+            <IconButton className={styles.filterIcon} iconProps={filterIcon} onClick={this._onClickFilter} title="Filter" ariaLabel="Filter"></IconButton>
+          </div>
+        </div>
+        <div className={`ms-Grid-row`}>
+          <div className={`ms-Grid-col ms-sm12`}>
+            {isModalSelection ? (
+              <MarqueeSelection selection={this._selection}>
+                <DetailsList
+                  items={items}
+                  compact={isCompactMode}
+                  columns={filteredColumns}
+                  selectionMode={SelectionMode.multiple}
+                  getKey={this._getId}
+                  setKey="multiple"
+                  layoutMode={DetailsListLayoutMode.justified}
+                  isHeaderVisible={true}
+                  selection={this._selection}
+                  selectionPreservedOnEmptyClick={true}
+                  onItemInvoked={this._onItemInvoked}
+                  enterModalSelectionOnTouch={true}
+                  ariaLabelForSelectionColumn="Toggle selection"
+                  ariaLabelForSelectAllCheckbox="Toggle selection for all items"
+                  checkButtonAriaLabel="Row checkbox"
+                />
+              </MarqueeSelection>
+            ) : (
+              <DetailsList
+                items={items}
+                compact={isCompactMode}
+                columns={filteredColumns}
+                selectionMode={SelectionMode.none}
+                getKey={this._getId}
+                setKey="none"
+                layoutMode={DetailsListLayoutMode.justified}
+                isHeaderVisible={true}
+                onItemInvoked={this._onItemInvoked}
+              />
+            )}
+          </div>
+        </div>
       </ThemeProvider>
     );
   }
@@ -607,8 +654,16 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     this.setState({ isCompactMode: checked });
   };
 
+  private _onClickFilter = (): void => {
+    this.setState({ showControl: !this.state.showControl });
+  };
+
   private _onChangeModalSelection = (ev: React.MouseEvent<HTMLElement>, checked: boolean): void => {
     this.setState({ isModalSelection: checked });
+  };
+
+  private _onChangeViewToday = (ev: React.MouseEvent<HTMLElement>, checked: boolean): void => {
+    this.setState({ isToday: checked });
   };
 
   private _onChangeText = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, text: string): void => {
@@ -659,18 +714,11 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     });
   };
 
-  // TODO Pass in headers and filter out necessary columns
-  private _filterColumns(columns: Object): IColumn[] {
-    
-    const filtered: IColumn[] = [];
-
-    // Filter columns
-    for (var key in columns) {
-      if (columns.hasOwnProperty(key)) {
-        filtered.push(columns[key])
-      }
-    }
-
+  private _filterColumns(columns: Object, headers: Array<string>): IColumn[] {
+    let filtered: IColumn[] = [];
+    headers.map((header) => {
+      filtered.push(columns[header]);
+    });
     return filtered;
   }
 }

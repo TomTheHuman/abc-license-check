@@ -1,5 +1,5 @@
 
-import { Page } from "./IAbcLicCheckState";
+import { Page, Report } from "./IAbcLicCheckState";
 
 export const MenuOptions: Array<Page> = [
     {
@@ -25,34 +25,107 @@ export const MenuOptions: Array<Page> = [
     },
   ];
 
-// TODO Add headers to each report (columns)
-export const Reports: Array<Page> = [
+// TODO Update headers according to report
+export const Reports: Array<Report> = [    
     {
-      key: 1,
+      key: 0,
       text: "Dashboard",
       name: "dashboard",
       type: "dashboard",
-      data: []
+      data: [],
+      headers: null,
     },
     {
-      key: 2,
+      key: 1,
       text: "Status Changes",
       name: "status changes",
       type: "report",
-      data: []
+      data: [],
+      headers: [
+        "created",
+        "report_type",
+        "lic_num",
+        "status_from",
+        "status_to",
+        "lic_type",
+        "lic_dup",
+        "issue_date",
+        "exp_date",
+        "acct_name",
+        "acct_own",
+        "acct_street",
+        "acct_city",
+        "acct_state",
+        "acct_zip",
+        "mail_street",
+        "mail_city",
+        "mail_zip",
+        "trans_from",
+        "trans_to",
+        "district",
+        "geocode"
+      ],
     },
     {
-      key: 3,
+      key: 2,
       text: "Issued Licenses",
       name: "issued licenses",
       type: "report",
-      data: []
+      data: [],
+      headers:  [
+        "created",
+        "report_type",
+        "lic_num",
+        "status_from",
+        "status_to",
+        "lic_type",
+        "lic_dup",
+        "issue_date",
+        "exp_date",
+        "acct_name",
+        "acct_own",
+        "acct_street",
+        "acct_city",
+        "acct_state",
+        "acct_zip",
+        "mail_street",
+        "mail_city",
+        "mail_zip",
+        "trans_from",
+        "trans_to",
+        "district",
+        "geocode"
+      ],
     },
     {
-      key: 4,
+      key: 3,
       text: "New Applications",
       name: "new applications",
       type: "report",
-      data: []
+      data: [],
+      headers:  [
+        "created",
+        "report_type",
+        "lic_num",
+        "status_from",
+        "status_to",
+        "lic_type",
+        "lic_dup",
+        "issue_date",
+        "exp_date",
+        "acct_name",
+        "acct_own",
+        "acct_street",
+        "acct_city",
+        "acct_state",
+        "acct_zip",
+        "mail_street",
+        "mail_city",
+        "mail_zip",
+        "trans_from",
+        "trans_to",
+        "district",
+        "geocode"
+      ],
     },
   ];

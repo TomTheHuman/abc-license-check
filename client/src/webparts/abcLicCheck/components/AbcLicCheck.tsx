@@ -73,7 +73,7 @@ export default class AbcLicCheck extends React.Component<
       case "dashboard":
         return <Dashboard state={this.state} />;
       case "report":
-        return <Report report={this.state.currentPage.data} />;
+        return <Report report={this.state.currentPage} />;
       default:
         // Return specific pages
     }
@@ -94,7 +94,7 @@ export default class AbcLicCheck extends React.Component<
             setPage={this._setPage}
           />
         <div className="ms-Grid-row">
-          <div className={""}>{this._handlePage()}</div>
+          <div className={"ms-Grid-col ms-sm12"}>{this._handlePage()}</div>
         </div>
       </div>
     );
