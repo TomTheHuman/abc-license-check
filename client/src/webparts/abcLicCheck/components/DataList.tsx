@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Page, Report, Header } from "./IAbcLicCheckState";
 import { TextField } from '@fluentui/react/lib/TextField';
 import { Toggle } from '@fluentui/react/lib/Toggle';
 import { Announced } from '@fluentui/react/lib/Announced';
@@ -7,6 +8,7 @@ import { MarqueeSelection } from '@fluentui/react/lib/MarqueeSelection';
 import { Dropdown, IDropdownOption, IIconProps, IconButton, ThemeProvider } from "office-ui-fabric-react";
 import  styles  from './styles/DetailsList.module.scss'
 import { StylesProvider } from "@material-ui/styles";
+import { useState } from "react";
 
 
 export interface DetailsListState {
@@ -18,6 +20,8 @@ export interface DetailsListState {
   isCompactMode: boolean;
   isToday: boolean;
   showControl: boolean;
+  colFilters: Array<Header>;
+  selectedFilters: Object;
   announcedMessage?: string;
   report: Array<Object>;
 }
@@ -56,7 +60,7 @@ export interface IItem {
 export class DataList extends React.Component<{ report }, DetailsListState> {
   private _selection: Selection;
   private _allItems: IItem[];
-  private _headers: Array<string>;
+  private _headers: Array<Header>;
 
   constructor(props: { report }) {
     super(props);
@@ -512,6 +516,17 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
 
     const filteredColumns = this._filterColumns(columns, this._headers);
 
+    const colFilters = this._headers.filter((e) => {
+      if (e.filter) return e;
+    })
+    colFilters.unshift({key: "none", text: "None", filter: true});
+    
+    const selectedFilters = {
+      filter1: { dropdown: colFilters[0], textField: "" },
+      filter2: { dropdown: colFilters[0], textField: "" },
+      filter3: { dropdown: colFilters[0], textField: "" },
+    };
+
     this._selection = new Selection({
       onSelectionChanged: () => {
         this.setState({
@@ -529,6 +544,8 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
       isCompactMode: false,
       isToday: true,
       showControl: false,
+      colFilters: colFilters,
+      selectedFilters: selectedFilters,
       announcedMessage: undefined,
       report: this.props.report,
     };
@@ -537,9 +554,10 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
   
 
   public render() {
-    const { columns, filteredColumns, isCompactMode, items, selectionDetails, isModalSelection, isToday, showControl, announcedMessage } = this.state;
+    const { columns, filteredColumns, isCompactMode, items, selectionDetails, isModalSelection, isToday, showControl, colFilters, selectedFilters, announcedMessage } = this.state;
     const filterIcon: IIconProps = { iconName: 'FilterSettings'};
-    
+
+
     return (
       <ThemeProvider>
         {(showControl && <div className={`${styles.controlWrapper} ${showControl ? 'ms-slideDownIn20' : 'ms-slideDownOut'} ms-Grid`}>
@@ -577,15 +595,42 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
           </div>
           <div className={`${styles.controlRow} ms-Grid-row`}>
             <div className={`ms-Grid-col ms-md4 ms-lg-8`}>
-              <TextField label="Filter by name:" onChange={this._onChangeText} className={styles.control} />
+              <Dropdown 
+                className={styles.control}
+                label="Filter by"
+                placeholder="Select column..." 
+                selectedKey={selectedFilters["filter1"].dropdown.key}
+                options={colFilters}
+                onChange={(e, item) => this._onSelectFilter("filter1", item)}
+              />
+              <TextField 
+                onChange={(ev, text) => this._onChangeText(ev, text, "filter1")}
+                value={selectedFilters["filter1"].textField}
+                className={styles.control} />
               <Announced message={`Number of items after filter applied: ${items.length}.`} />
             </div>
             <div className={`ms-Grid-col ms-md4 ms-lg-8`}>
-              <TextField label="Filter by name:" onChange={this._onChangeText} className={styles.control} />
+              <Dropdown 
+                className={styles.control}
+                label="Filter by"
+                placeholder="Select column..." 
+                selectedKey={selectedFilters["filter2"].dropdown.key}
+                options={colFilters}
+                onChange={(e, item) => this._onSelectFilter("filter2", item)}
+              />
+              <TextField onChange={(ev, text) => this._onChangeText(ev, text, "filter2")} className={styles.control} />
               <Announced message={`Number of items after filter applied: ${items.length}.`} />
             </div>
             <div className={`ms-Grid-col ms-md4 ms-lg-8`}>
-              <TextField label="Filter by name:" onChange={this._onChangeText} className={styles.control} />
+              <Dropdown 
+                className={styles.control}
+                label="Filter by"
+                placeholder="Select column..." 
+                selectedKey={selectedFilters["filter3"].dropdown.key}
+                options={colFilters}
+                onChange={(e, item) => this._onSelectFilter("filter3", item)}
+              />
+              <TextField onChange={(ev, text) => this._onChangeText(ev, text, "filter3")} className={styles.control} />
               <Announced message={`Number of items after filter applied: ${items.length}.`} />
             </div>
           </div>
@@ -666,10 +711,32 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     this.setState({ isToday: checked });
   };
 
-  private _onChangeText = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, text: string): void => {
-    this.setState({
-      items: text ? this._allItems.filter(i => String(i.lic_num).indexOf(text) > -1) : this._allItems,
+  // TODO Fix filtering ability
+  private _onChangeText = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, text: string, currFilter: string): void => {
+    let selected = this.state.selectedFilters;
+
+    selected[currFilter].textField = text;
+    this.setState({ selectedFilters: selected });
+
+    const filtText1 = selected["filter1"].textField.toLowerCase();
+    const filtText2 = selected["filter2"].textField.toLowerCase();
+    const filtText3 = selected["filter3"].textField.toLowerCase();
+
+    const allItemsCopy = this._allItems.filter((i) => { 
+
+      return (selected["filter1"].dropdown.key !== "none" || i[selected["filter1"].dropdown.key].toString().toLowerCase().indexOf(filtText1) > -1) &&
+        (selected["filter2"].dropdown.key !== "none" || i[selected["filter2"].dropdown.key].toString().toLowerCase().indexOf(filtText2) > -1) &&
+        (selected["filter3"].dropdown.key !== "none" || i[selected["filter3"].dropdown.key].toString().toLowerCase().indexOf(filtText3) > -1)
     });
+
+    console.log(allItemsCopy)
+
+    this.setState({
+      items: (selected["filter1"].textField || selected["filter2"].textField || selected["filter3"].textField) ? 
+        allItemsCopy : 
+        this._allItems,
+    });
+
   };
 
   private _onItemInvoked(item: any): void {
@@ -714,17 +781,24 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     });
   };
 
-  private _filterColumns(columns: Object, headers: Array<string>): IColumn[] {
+  private _filterColumns(columns: Object, headers: Array<Header>): IColumn[] {
     let filtered: IColumn[] = [];
     headers.map((header) => {
-      filtered.push(columns[header]);
+      let key = header.key;
+      filtered.push(columns[key]);
     });
     return filtered;
-  }
+  };
+
+  private _onSelectFilter = (filterNum: string, colFilter: any): void => {
+    let selectedFiltersCopy = this.state.selectedFilters;
+    selectedFiltersCopy[filterNum].dropdown = colFilter;
+
+    this.setState({ selectedFilters: selectedFiltersCopy }, () => console.log(this.state));
+  };
 }
 
 function _copyAndSort<T>(items: T[], columnKey: string, isSortedDescending?: boolean): T[] {
   const key = columnKey as keyof T;
   return items.slice(0).sort((a: T, b: T) => ((isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1));
 }
-

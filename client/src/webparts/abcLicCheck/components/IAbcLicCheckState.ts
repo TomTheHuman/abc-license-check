@@ -12,7 +12,13 @@ export interface Report {
   name: string;
   type: string;
   data: Array<Object>;
-  headers: Array<Object>;
+  headers: Array<Header>;
+}
+
+export interface Header {
+  key: string;
+  text: string;
+  filter: boolean;
 }
 
 export interface IAbcLicCheckState {
