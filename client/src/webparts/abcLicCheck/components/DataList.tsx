@@ -78,14 +78,18 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
             ariaLabel: 'Column operations for Created, Press to sort on Created',
             isResizable: true,
             isRowHeader: true,
-            minWidth: 180,
-            maxWidth: 360,
+            minWidth: 80,
+            maxWidth: 180,
             isSorted: true,
             isSortedDescending: true,
             sortAscendingAriaLabel: 'Sorted Older to Newer',
             sortDescendingLabel: 'Sorted Newer to Older',
             onColumnClick: this._onColumnClick,
             isPadded: true,
+            onRender: (item: IItem) => {
+              let newDate = new Date(String(item.created));
+              return <span>{`${newDate.getMonth() + 1}/${newDate.getDate()}/${newDate.getFullYear()}`}</span>;
+            }
         },
         'report_type': {
             key: 'report_type',
@@ -214,14 +218,18 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
             ariaLabel: 'Column operations for Issue Date, Press to sort on Issue Date',
             isResizable: true,
             isRowHeader: true,
-            minWidth: 180,
-            maxWidth: 360,
+            minWidth: 80,
+            maxWidth: 180,
             isSorted: true,
             isSortedDescending: false,
             sortAscendingAriaLabel: 'Sorted Older to Newer',
             sortDescendingLabel: 'Sorted Newer to Older',
             onColumnClick: this._onColumnClick,
             isPadded: true,
+            onRender: (item: IItem) => {
+              let newDate = new Date(String(item.issue_date));
+              return <span>{`${newDate.getMonth() + 1}/${newDate.getDate()}/${newDate.getFullYear()}`}</span>;
+            }
         },
         'exp_date': {
             key: 'exp_date',
@@ -231,14 +239,18 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
             ariaLabel: 'Column operations for Expiration Date, Press to sort on Expiration Date',
             isResizable: true,
             isRowHeader: true,
-            minWidth: 180,
-            maxWidth: 360,
+            minWidth: 80,
+            maxWidth: 180,
             isSorted: true,
             isSortedDescending: false,
             sortAscendingAriaLabel: 'Sorted Older to Newer',
             sortDescendingLabel: 'Sorted Newer to Older',
             onColumnClick: this._onColumnClick,
             isPadded: true,
+            onRender: (item: IItem) => {
+              let newDate = new Date(String(item.exp_date));
+              return <span>{`${newDate.getMonth() + 1}/${newDate.getDate()}/${newDate.getFullYear()}`}</span>;
+            }
         },
         'acct_name': {
             key: 'acct_name',
@@ -519,12 +531,11 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     const colFilters = this._headers.filter((e) => {
       if (e.filter) return e;
     })
-    colFilters.unshift({key: "none", text: "None", filter: true});
     
     const selectedFilters = {
       filter1: { dropdown: colFilters[0], textField: "" },
-      filter2: { dropdown: colFilters[0], textField: "" },
-      filter3: { dropdown: colFilters[0], textField: "" },
+      filter2: { dropdown: colFilters[1], textField: "" },
+      filter3: { dropdown: colFilters[2], textField: "" },
     };
 
     this._selection = new Selection({
@@ -711,7 +722,6 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     this.setState({ isToday: checked });
   };
 
-  // TODO Fix filtering ability
   private _onChangeText = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, text: string, currFilter: string): void => {
     let selected = this.state.selectedFilters;
 
@@ -724,12 +734,10 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
 
     const allItemsCopy = this._allItems.filter((i) => { 
 
-      return (selected["filter1"].dropdown.key !== "none" || i[selected["filter1"].dropdown.key].toString().toLowerCase().indexOf(filtText1) > -1) &&
-        (selected["filter2"].dropdown.key !== "none" || i[selected["filter2"].dropdown.key].toString().toLowerCase().indexOf(filtText2) > -1) &&
-        (selected["filter3"].dropdown.key !== "none" || i[selected["filter3"].dropdown.key].toString().toLowerCase().indexOf(filtText3) > -1)
+      return i[selected["filter1"].dropdown.key].toString().toLowerCase().indexOf(filtText1) > -1 &&
+        i[selected["filter2"].dropdown.key].toString().toLowerCase().indexOf(filtText2) > -1 &&
+        i[selected["filter3"].dropdown.key].toString().toLowerCase().indexOf(filtText3) > -1
     });
-
-    console.log(allItemsCopy)
 
     this.setState({
       items: (selected["filter1"].textField || selected["filter2"].textField || selected["filter3"].textField) ? 
@@ -794,7 +802,7 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     let selectedFiltersCopy = this.state.selectedFilters;
     selectedFiltersCopy[filterNum].dropdown = colFilter;
 
-    this.setState({ selectedFilters: selectedFiltersCopy }, () => console.log(this.state));
+    this.setState({ selectedFilters: selectedFiltersCopy });
   };
 }
 
