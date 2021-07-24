@@ -68,7 +68,6 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     this._allItems = this.props.report.data;
     this._headers = this.props.report.headers;
 
-    // TODO Adjust default min and max widths for each column
     const columns: Object = {
       'created': {
         key: 'created',
