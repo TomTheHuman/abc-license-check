@@ -50,7 +50,8 @@ class Report(models.Model):
         Status, on_delete=models.PROTECT, blank=True, null=True, related_name="status_from")
     status_to = models.ForeignKey(
         Status, on_delete=models.PROTECT, blank=True, null=True, related_name="status_to")
-    status = models.ForeignKey(Status, on_delete=models.PROTECT, blank=True, null=True)
+    status = models.ForeignKey(
+        Status, on_delete=models.PROTECT, blank=True, null=True)
     lic_type = models.CharField(max_length=24, blank=True)
     lic_dup = models.CharField(max_length=24, blank=True)
     issue_date = models.DateTimeField(blank=True, null=True)
@@ -65,9 +66,12 @@ class Report(models.Model):
     mail_city = models.CharField(max_length=255, blank=True, null=True)
     mail_state = models.CharField(max_length=8, blank=True, null=True)
     mail_zip = models.CharField(max_length=48, blank=True, null=True)
+    action = models.ForeignKey(
+        Action, on_delete=models.PROTECT, blank=True, null=True)
     conditions = models.CharField(max_length=48, blank=True, null=True)
     escrow_addr = models.CharField(max_length=255, blank=True, null=True)
-    district = models.ForeignKey(District, on_delete=models.PROTECT, blank=True, null=True)
+    district = models.ForeignKey(
+        District, on_delete=models.PROTECT, blank=True, null=True)
     trans_from = models.CharField(max_length=48, blank=True, null=True)
     trans_to = models.CharField(max_length=48, blank=True, null=True)
     geocode = models.IntegerField(blank=True, null=True)
