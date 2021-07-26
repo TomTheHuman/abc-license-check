@@ -3,9 +3,11 @@ import { Page, Report, Header } from "./IAbcLicCheckState";
 import { TextField } from '@fluentui/react/lib/TextField';
 import { Toggle } from '@fluentui/react/lib/Toggle';
 import { Announced } from '@fluentui/react/lib/Announced';
-import { DetailsList, DetailsListLayoutMode, Selection, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
+import { DetailsList, DetailsListLayoutMode, Selection, SelectionMode, IColumn, IDetailsColumnRenderTooltipProps, IDetailsHeaderProps, IDetailsListStyles, IViewport } from '@fluentui/react/lib/DetailsList';
 import { MarqueeSelection } from '@fluentui/react/lib/MarqueeSelection';
-import { Dropdown, IDropdownOption, IIconProps, IconButton, ThemeProvider } from "office-ui-fabric-react";
+import { Dropdown, IDropdownOption, IIconProps, IconButton, ThemeProvider, ScrollablePane,  } from "office-ui-fabric-react";
+import { TooltipHost } from "@fluentui/react/lib/Tooltip";
+import { IRenderFunction } from "@fluentui/react/lib/Utilities"
 import styles from './styles/DetailsList.module.scss'
 import { StylesProvider } from "@material-ui/styles";
 import { useState } from "react";
@@ -24,6 +26,7 @@ export interface DetailsListState {
   selectedFilters: Object;
   announcedMessage?: string;
   report: Array<Object>;
+  height: number;
 }
 
 export interface IItem {
@@ -67,6 +70,8 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
 
     this._allItems = this.props.report.data;
     this._headers = this.props.report.headers;
+
+    this._updateWindowDimensions = this._updateWindowDimensions.bind(this);
 
     const columns: Object = {
       'created': {
@@ -575,6 +580,7 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
       selectedFilters: selectedFilters,
       announcedMessage: undefined,
       report: this.props.report,
+      height: 0,
     };
   }
 
@@ -583,11 +589,37 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
   public render() {
     const { columns, filteredColumns, isCompactMode, items, selectionDetails, isModalSelection, isToday, showControl, colFilters, selectedFilters, announcedMessage } = this.state;
     const filterIcon: IIconProps = { iconName: 'FilterSettings' };
+    const controlHeight = 200;
 
+
+    const gridStyles: Partial<IDetailsListStyles> = {
+      root: {
+        height: '100%',
+        overflowX: 'scroll',
+        selectors: {
+          '& [role=grid]': {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'start',
+            height: '100%',
+          },
+        },
+      },
+      headerWrapper: {
+        flex: '0 0 auto',
+      },
+      // TODO Create function to fix height modifier based on breakpoints
+      contentWrapper: {
+        flex: '1 1 auto',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        height: showControl ? (this.state.height * 0.60) - controlHeight : this.state.height * 0.60,
+      },
+    };
 
     return (
       <ThemeProvider>
-        {(showControl && <div className={`${styles.controlWrapper} ${showControl ? 'ms-slideDownIn20' : 'ms-slideDownOut'} ms-Grid`}>
+        {(showControl && <div style={{height: controlHeight}} className={`${styles.controlWrapper} ${showControl ? 'ms-slideDownIn20' : 'ms-slideDownOut'} ms-Grid`}>
           <div className={`${styles.controlRow} ms-Grid-row`}>
             <div className={`ms-Grid-col ms-sm4 ms-md4 ms-lg-2`}>
               <Toggle
@@ -672,7 +704,7 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
           </div>
         </div>
         <div className={`ms-Grid-row`}>
-          <div className={`ms-Grid-col ms-sm12`}>
+          <div className={`${styles.detailsList} ms-Grid-col ms-sm12`}>
             {isModalSelection ? (
               <MarqueeSelection selection={this._selection}>
                 <DetailsList
@@ -694,17 +726,20 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
                 />
               </MarqueeSelection>
             ) : (
-              <DetailsList
-                items={items}
-                compact={isCompactMode}
-                columns={filteredColumns}
-                selectionMode={SelectionMode.none}
-                getKey={this._getId}
-                setKey="none"
-                layoutMode={DetailsListLayoutMode.justified}
-                isHeaderVisible={true}
-                onItemInvoked={this._onItemInvoked}
-              />
+                <DetailsList
+                  items={items}
+                  compact={isCompactMode}
+                  columns={filteredColumns}
+                  selectionMode={SelectionMode.none}
+                  getKey={this._getId}
+                  setKey="none"
+                  styles={gridStyles}
+                  layoutMode={DetailsListLayoutMode.justified}
+                  isHeaderVisible={true}
+                  onItemInvoked={this._onItemInvoked}
+                  onRenderDetailsHeader={this.onRenderDetailsHeader}
+                />
+
             )}
           </div>
         </div>
@@ -712,10 +747,23 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     );
   }
 
+  public componentDidMount() {
+    this._updateWindowDimensions();
+    window.addEventListener('resize', this._updateWindowDimensions);
+  }
+
   public componentDidUpdate(previousProps: any, previousState: DetailsListState) {
     if (previousState.isModalSelection !== this.state.isModalSelection && !this.state.isModalSelection) {
       this._selection.setAllSelected(false);
     }
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener('resize', this._updateWindowDimensions);
+  }
+
+  private _updateWindowDimensions() {
+    this.setState({ height: window.innerHeight });
   }
 
   private _getId(item: any, index?: number): string {
@@ -818,6 +866,19 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     selectedFiltersCopy[filterNum].dropdown = colFilter;
 
     this.setState({ selectedFilters: selectedFiltersCopy });
+  };
+
+  private onRenderDetailsHeader: IRenderFunction<IDetailsHeaderProps> = (props, defaultRender) => {
+    if (!props) {
+      return null;
+    }
+    const onRenderColumnHeaderTooltip: IRenderFunction<IDetailsColumnRenderTooltipProps> = tooltipHostProps => (
+      <TooltipHost {...tooltipHostProps} />
+    );
+    return defaultRender!({
+      ...props,
+      onRenderColumnHeaderTooltip,
+    });
   };
 }
 

@@ -25,7 +25,6 @@ export const MenuOptions: Array<Page> = [
   },
 ];
 
-// TODO Update headers according to report
 export const Reports: Array<Report> = [
   {
     key: 0,

@@ -46,7 +46,6 @@ export default class AbcLicCheck extends React.Component<
 
       const reports = this.state.reports;
       const reportsData = reports.map((report) => {
-        console.log(report);
         switch (report.name) {
           case "status changes":
             report.data = resStatusChange;
@@ -61,10 +60,9 @@ export default class AbcLicCheck extends React.Component<
             break;
         }
       });
-      console.log(reportsData);
       this.setState(() => {
         reports: reportsData;
-      }, () => console.log(this.state.reports));
+      });
     });
   }
 
@@ -88,7 +86,7 @@ export default class AbcLicCheck extends React.Component<
   public render(): React.ReactElement<IAbcLicCheckProps> {
     return (
       // TODO Make this div resize based on height of window
-      <div className={`${""} ms-Grid`}>
+      <div className={`${styles.abcLicCheck} ms-Grid`}>
           <Navigation
             state={this.state}
             setPage={this._setPage}
