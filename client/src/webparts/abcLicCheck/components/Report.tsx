@@ -4,7 +4,7 @@ import styles from "./styles/Report.module.scss";
 
 const Report = ({ report }) => {
   return (
-    <div className={styles.report}>
+    <div key={report.key} className={styles.report}>
       <DataList report={report} />
     </div>
   );

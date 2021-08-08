@@ -34,6 +34,8 @@ class AdminSerializer(serializers.ModelSerializer):
 
 
 class ReportSerializer(serializers.ModelSerializer):
+    report_type = serializers.ReadOnlyField(source='report_type_d')
+
     class Meta:
         model = Report
         fields = ['id',
@@ -63,3 +65,12 @@ class ReportSerializer(serializers.ModelSerializer):
                   'trans_from',
                   'trans_to',
                   'geocode']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['status'] = StatusSerializer(instance.status).data['description']
+        rep['status_from'] = StatusSerializer(instance.status_from).data['description']
+        rep['status_to'] = StatusSerializer(instance.status_to).data['description']
+        rep['action'] = ActionSerializer(instance.action).data['description']
+        rep['district'] = DistrictSerializer(instance.district).data['description']
+        return rep

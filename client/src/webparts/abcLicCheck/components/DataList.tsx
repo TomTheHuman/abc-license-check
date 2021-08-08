@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Page, Report, Header } from "./IAbcLicCheckState";
+import { Page, Report, Header, IItem } from "./IAbcLicCheckState";
 import { TextField } from "@fluentui/react/lib/TextField";
 import { Toggle } from "@fluentui/react/lib/Toggle";
 import { Announced } from "@fluentui/react/lib/Announced";
@@ -41,46 +41,19 @@ export interface DetailsListState {
   colFilters: Array<Header>;
   selectedFilters: Object;
   announcedMessage?: string;
-  report: Array<Object>;
+  report: Report;
   height: number;
 }
 
-export interface IItem {
-  id: number;
-  created: Date;
-  report_type: string;
-  lic_num: number;
-  status_from: string;
-  status_to: string;
-  status: string;
-  lic_type: string;
-  lic_dup: string;
-  issue_date: Date;
-  exp_date: Date;
-  acct_name: string;
-  acct_own: string;
-  acct_street: string;
-  acct_city: string;
-  acct_state: string;
-  acct_zip: string;
-  mail_street: string;
-  mail_city: string;
-  mail_state: string;
-  mail_zip: string;
-  conditions: string;
-  escrow_addr: string;
-  district: string;
-  trans_from: string;
-  trans_to: string;
-  geocode: number;
-}
-
-export class DataList extends React.Component<{ report }, DetailsListState> {
+export class DataList extends React.Component<
+  { report: Report },
+  DetailsListState
+> {
   private _selection: Selection;
   private _allItems: IItem[];
   private _headers: Array<Header>;
 
-  constructor(props: { report }) {
+  constructor(props: { report: Report }) {
     super(props);
 
     this._allItems = this.props.report.data;
@@ -257,12 +230,14 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
         onColumnClick: this._onColumnClick,
         isPadded: true,
         onRender: (item: IItem) => {
-          let newDate = new Date(String(item.issue_date));
-          return (
-            <span>{`${
-              newDate.getMonth() + 1
-            }/${newDate.getDate()}/${newDate.getFullYear()}`}</span>
-          );
+          if (item.issue_date) {
+            let newDate = new Date(String(item.issue_date));
+            return (
+              <span>{`${
+                newDate.getMonth() + 1
+              }/${newDate.getDate()}/${newDate.getFullYear()}`}</span>
+            );
+          }
         },
       },
       exp_date: {
@@ -283,12 +258,14 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
         onColumnClick: this._onColumnClick,
         isPadded: true,
         onRender: (item: IItem) => {
-          let newDate = new Date(String(item.exp_date));
-          return (
-            <span>{`${
-              newDate.getMonth() + 1
-            }/${newDate.getDate()}/${newDate.getFullYear()}`}</span>
-          );
+          if (item.exp_date) {
+            let newDate = new Date(String(item.exp_date));
+            return (
+              <span>{`${
+                newDate.getMonth() + 1
+              }/${newDate.getDate()}/${newDate.getFullYear()}`}</span>
+            );
+          }
         },
       },
       acct_name: {
@@ -505,13 +482,12 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
         onColumnClick: this._onColumnClick,
         isPadded: true,
       },
-      escrow_addr: {
-        key: "escrow_addr",
-        name: "Escrow Address",
-        fieldName: "escrow_addr",
+      escrow: {
+        key: "escrow",
+        name: "Escrow",
+        fieldName: "escrow",
         data: "string",
-        ariaLabel:
-          "Column operations for Escrow Address, Press to sort on Escrow Address",
+        ariaLabel: "Column operations for Escrow, Press to sort on Escrow",
         isResizable: true,
         isRowHeader: true,
         minWidth: 180,
@@ -846,6 +822,7 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     previousProps: any,
     previousState: DetailsListState
   ) {
+    // Handle Modal Selection
     if (
       previousState.isModalSelection !== this.state.isModalSelection &&
       !this.state.isModalSelection
@@ -990,7 +967,6 @@ export class DataList extends React.Component<{ report }, DetailsListState> {
     let filtered: IColumn[] = [];
     headers.map((header) => {
       let key = header.key;
-      console.log(key);
       filtered.push(columns[key]);
     });
     return filtered;

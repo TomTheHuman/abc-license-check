@@ -7,13 +7,6 @@ import Navigation from "./Navigation";
 import Dashboard from "./Dashboard";
 import Report from "./Report";
 import axios from "axios";
-import { escape } from "@microsoft/sp-lodash-subset";
-import {
-  ISPHttpClientOptions,
-  SPHttpClient,
-  HttpClient,
-  SPHttpClientResponse,
-} from "@microsoft/sp-http";
 
 export default class AbcLicCheck extends React.Component<
   IAbcLicCheckProps,
@@ -32,7 +25,6 @@ export default class AbcLicCheck extends React.Component<
     this._setPage = this._setPage.bind(this);
   }
 
-  // TODO Get API to serve data with foreign key references
   // TODO Get API to serve data sorted by created date
   public componentDidMount() {
     const urlStatusChange =
@@ -59,7 +51,7 @@ export default class AbcLicCheck extends React.Component<
             case "status changes":
               report.data = resStatusChange;
               return report;
-            case "new applicatons":
+            case "new applications":
               report.data = resNewApplication;
               return report;
             case "issued licenses":
@@ -69,12 +61,9 @@ export default class AbcLicCheck extends React.Component<
               break;
           }
         });
-        this.setState(
-          () => {
-            reports: reportsData;
-          },
-          () => console.log(this.state)
-        );
+        this.setState(() => {
+          reports: reportsData;
+        });
       });
   }
 
@@ -83,6 +72,7 @@ export default class AbcLicCheck extends React.Component<
       case "dashboard":
         return <Dashboard state={this.state} />;
       case "report":
+        // console.log("Running!");
         return <Report report={this.state.currentPage} />;
       default:
       // Return specific pages
@@ -96,6 +86,7 @@ export default class AbcLicCheck extends React.Component<
   }
 
   public render(): React.ReactElement<IAbcLicCheckProps> {
+    console.log(this.state.currentPage);
     return (
       // TODO Make this div resize based on height of window
       <div className={`${styles.abcLicCheck} ms-Grid`}>

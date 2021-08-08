@@ -1,8 +1,6 @@
 from django.db import models
 from django.db.models.fields import related
 
-# TODO Need to update report import process to reflect report model with type
-
 REPORT_TYPE_CHOICES = (
     ("status_change", "Status Change"),
     ("new_application", "New Application"),
@@ -75,3 +73,8 @@ class Report(models.Model):
     trans_from = models.CharField(max_length=48, blank=True, null=True)
     trans_to = models.CharField(max_length=48, blank=True, null=True)
     geocode = models.IntegerField(blank=True, null=True)
+
+    @property
+    def report_type_d(self):
+        return self.get_report_type_display()
+    

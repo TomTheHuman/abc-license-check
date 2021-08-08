@@ -1,4 +1,3 @@
-
 import { Page, Report, Header } from "./IAbcLicCheckState";
 
 export const MenuOptions: Array<Page> = [
@@ -7,21 +6,21 @@ export const MenuOptions: Array<Page> = [
     text: "Manage Territories",
     name: "manage territories",
     type: "option",
-    data: []
+    data: [],
   },
   {
     key: 2,
     text: "Email Recipients",
     name: "email recipients",
     type: "option",
-    data: []
+    data: [],
   },
   {
     key: 3,
     text: "Download Logs",
     name: "download logs",
     type: "option",
-    data: []
+    data: [],
   },
 ];
 
@@ -72,7 +71,6 @@ export const Reports: Array<Report> = [
     name: "issued licenses",
     type: "report",
     data: [],
-    // TODO Update logic to handle full Status value for this report (ie. Issued-Temp.)
     headers: [
       { key: "created", text: "Created", filter: false },
       { key: "report_type", text: "Report Type", filter: true },
