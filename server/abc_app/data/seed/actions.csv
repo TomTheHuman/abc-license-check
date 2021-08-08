@@ -12,3 +12,5 @@
 "EXC/PER","Person to Person Exchange"
 "EXC/PERP","Person to Person, Premise to Premise Exchange"
 "EXC/PREM","Premise to Premise Exchange"
+"PER/PRM","Premise to Premise, Person to Person (Custom)"
+"PRM/FID","Premise to Premise Fiduciary (Custom)"

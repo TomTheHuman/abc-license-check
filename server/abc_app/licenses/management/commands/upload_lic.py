@@ -5,6 +5,7 @@ import csv
 # from mysql.connector import Error
 import datetime
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from django.core.management import BaseCommand
 
 from licenses.models import Report, Action, District, Status
@@ -170,8 +171,14 @@ class Command(BaseCommand):
                 for row in data_reader:
                     # Initialize new dict to store row data
                     issued_license = Report()
+                    issued_license.report_type = "issued_license"
                     issued_license.lic_num = int(row[0].strip())
-                    issued_license.status = row[1].strip()
+
+                    # Issued Licenses use the status description instead of code
+                    status_desc = row[1].strip()
+                    status = Status.objects.get(description=status_desc)
+                    issued_license.status = status
+
                     issued_license.lic_type = int(row[2][:(row[2].find(' '))].strip())
                     issued_license.lic_dup = int(row[2][(row[2].find('|') + 1):].strip())
                     
@@ -252,10 +259,24 @@ class Command(BaseCommand):
 
                     # If each of the columns below are not empty strings, they are stored as dict values
                     # If strings are empty, values are set to None
-                    issued_license.action = row[6] if len(row[6]) > 0 else None
+
+
+                    # Get item from Action model
+                    if len(row[6]) > 0:
+                        code = row[6].strip()
+                        print(code)
+                        action = Action.objects.filter(code=code).first()
+                        print(action)
+                        issued_license.action = action
+
                     issued_license.conditions = row[7] if len(row[7]) > 0 else None
                     issued_license.escrow_addr = row[8] if len(row[8]) > 0 else None
-                    issued_license.district = int(row[9]) if len(row[9]) > 0 else None
+
+                    # Get item from District model
+                    code = int(row[9]) if len(row[9]) > 0 else None
+                    district = District.objects.get(code=code)
+                    issued_license.district = district
+
                     issued_license.geocode = int(row[10]) if len(row[10]) > 0 else None
 
                     issued_license.save()
@@ -560,4 +581,3 @@ class Command(BaseCommand):
 
     #     conn.close()
     
-
