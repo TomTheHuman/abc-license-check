@@ -43,11 +43,18 @@ class Command(BaseCommand):
                 data_reader = csv.reader(datafile)
                 next(data_reader)
 
+                counter = 0
+
                 # String format used in ABC reports
                 format_str = '%m/%d/%Y'
                 for row in data_reader:
                     # Initialize new dict to store row data
                     status_change = Report()
+                    if counter < 3:
+                        datetime_report = datetime.datetime.strptime("08/12/2021", format_str)
+                        counter += 1
+                    datetime_report = datetime.datetime.strptime("07/01/2021", format_str)
+                    status_change.report_date = datetime_report.strftime('%Y-%m-%d')
                     status_change.report_type = "status_change"
                     status_change.lic_num = int(row[0].strip())
 
@@ -165,12 +172,17 @@ class Command(BaseCommand):
             with open('./data/report_issued_licenses.csv') as datafile:
                 data_reader = csv.reader(datafile)
                 next(data_reader)
-
+                counter = 0
                 # String format used in ABC reports            
                 format_str = '%m/%d/%Y'
                 for row in data_reader:
                     # Initialize new dict to store row data
                     issued_license = Report()
+                    if counter < 3:
+                        datetime_report = datetime.datetime.strptime("08/12/2021", format_str)
+                        counter += 1
+                    datetime_report = datetime.datetime.strptime("07/01/2021", format_str)
+                    issued_license.report_date = datetime_report.strftime('%Y-%m-%d')
                     issued_license.report_type = "issued_license"
                     issued_license.lic_num = int(row[0].strip())
 
@@ -298,12 +310,17 @@ class Command(BaseCommand):
 
                 data_reader = csv.reader(datafile)
                 next(data_reader)
+                counter = 0
 
                 # String format used in ABC reports
                 format_str = '%m/%d/%Y'
                 for row in data_reader:
                     # Initialize new dict to store row data
                     new_application = Report()
+                    if counter < 3:
+                        datetime_report = datetime.datetime.strptime("08/12/2021", format_str)
+                    datetime_report = datetime.datetime.strptime("07/01/2021", format_str)
+                    new_application.report_date = datetime_report.strftime('%Y-%m-%d')
                     new_application.report_type = "new_application"
                     new_application.lic_num = int(row[0].strip())
 

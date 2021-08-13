@@ -1,6 +1,7 @@
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.exceptions import ValidationError
+import datetime
 from licenses.serializers import ReportSerializer
 from licenses.models import Report
 
@@ -26,6 +27,18 @@ class ReportByTypeList(ListAPIView):
     def get_queryset(self):
         type = self.kwargs['type']
         return Report.objects.filter(report_type=type)
+        
+
+class ReportByTypeTodayList(ListAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+
+
+    def get_queryset(self):
+        type = self.kwargs['type']
+        # TODO Need to compare only month, day, and year when filtering for today's data?
+        res = Report.objects.filter(report_type=type, report_date__date=datetime.date.today())
+        return res
 
 
 class ReportCreate(CreateAPIView):

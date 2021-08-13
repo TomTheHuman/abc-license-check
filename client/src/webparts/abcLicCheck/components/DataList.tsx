@@ -33,6 +33,8 @@ export interface DetailsListState {
   columns: Object;
   filteredColumns: IColumn[];
   items: IItem[];
+  itemsAll: IItem[];
+  itemsToday: IItem[];
   selectionDetails: string;
   isModalSelection: boolean;
   isCompactMode: boolean;
@@ -50,13 +52,17 @@ export class DataList extends React.Component<
   DetailsListState
 > {
   private _selection: Selection;
-  private _allItems: IItem[];
+  private _items: IItem[];
+  private _itemsAll: IItem[];
+  private _itemsToday: IItem[];
   private _headers: Array<Header>;
 
   constructor(props: { report: Report }) {
     super(props);
 
-    this._allItems = this.props.report.data;
+    this._items = this.props.report.data.today;
+    this._itemsAll = this.props.report.data.all;
+    this._itemsToday = this.props.report.data.today;
     this._headers = this.props.report.headers;
 
     this._updateWindowDimensions = this._updateWindowDimensions.bind(this);
@@ -591,7 +597,9 @@ export class DataList extends React.Component<
     });
 
     this.state = {
-      items: this._allItems,
+      items: this._items,
+      itemsAll: this._itemsAll,
+      itemsToday: this._itemsToday,
       columns: columns,
       filteredColumns: filteredColumns,
       selectionDetails: this._getSelectionDetails(),
@@ -613,6 +621,8 @@ export class DataList extends React.Component<
       filteredColumns,
       isCompactMode,
       items,
+      itemsAll,
+      itemsToday,
       selectionDetails,
       isModalSelection,
       isToday,
@@ -865,7 +875,10 @@ export class DataList extends React.Component<
     ev: React.MouseEvent<HTMLElement>,
     checked: boolean
   ): void => {
-    this.setState({ isToday: checked });
+    this.setState({
+      isToday: checked,
+      items: checked ? this._itemsToday : this._itemsAll,
+    });
   };
 
   private _onChangeText = (
@@ -882,7 +895,7 @@ export class DataList extends React.Component<
     const filtText2 = selected["filter2"].textField.toLowerCase();
     const filtText3 = selected["filter3"].textField.toLowerCase();
 
-    const allItemsCopy = this._allItems.filter((i) => {
+    const allItemsCopy = this._items.filter((i) => {
       return (
         i[selected["filter1"].dropdown.key]
           .toString()
@@ -905,7 +918,7 @@ export class DataList extends React.Component<
         selected["filter2"].textField ||
         selected["filter3"].textField
           ? allItemsCopy
-          : this._allItems,
+          : this._items,
     });
   };
 

@@ -6,21 +6,27 @@ export const MenuOptions: Array<Page> = [
     text: "Manage Territories",
     name: "manage territories",
     type: "option",
-    data: [],
+    data: {
+      all: [],
+    },
   },
   {
     key: 2,
     text: "Email Recipients",
     name: "email recipients",
     type: "option",
-    data: [],
+    data: {
+      all: [],
+    },
   },
   {
     key: 3,
     text: "Download Logs",
     name: "download logs",
     type: "option",
-    data: [],
+    data: {
+      all: [],
+    },
   },
 ];
 
@@ -30,7 +36,10 @@ export const Reports: Array<Report> = [
     text: "Dashboard",
     name: "dashboard",
     type: "dashboard",
-    data: [],
+    data: {
+      today: [],
+      all: [],
+    },
     headers: null,
   },
   {
@@ -38,7 +47,10 @@ export const Reports: Array<Report> = [
     text: "Status Changes",
     name: "status changes",
     type: "report",
-    data: [],
+    data: {
+      today: [],
+      all: [],
+    },
     headers: [
       { key: "created", text: "Created", filter: false },
       { key: "report_type", text: "Report Type", filter: true },
@@ -70,7 +82,10 @@ export const Reports: Array<Report> = [
     text: "Issued Licenses",
     name: "issued licenses",
     type: "report",
-    data: [],
+    data: {
+      today: [],
+      all: [],
+    },
     headers: [
       { key: "created", text: "Created", filter: false },
       { key: "report_type", text: "Report Type", filter: true },
@@ -101,7 +116,10 @@ export const Reports: Array<Report> = [
     text: "New Applications",
     name: "new applications",
     type: "report",
-    data: [],
+    data: {
+      today: [],
+      all: [],
+    },
     headers: [
       { key: "created", text: "Created", filter: false },
       { key: "report_type", text: "Report Type", filter: true },

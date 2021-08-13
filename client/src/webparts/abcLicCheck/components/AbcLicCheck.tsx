@@ -27,35 +27,57 @@ export default class AbcLicCheck extends React.Component<
 
   // TODO Get API to serve data sorted by created date
   public componentDidMount() {
-    const urlStatusChange =
+    const urlStatusChange_All =
       "http://localhost:8000/api/v1/reports/status_change/";
-    const urlNewApplication =
+    const urlStatusChange_Today =
+      "http://localhost:8000/api/v1/reports/status_change/today";
+    const urlNewApplication_All =
       "http://localhost:8000/api/v1/reports/new_application/";
-    const urlIssuedLicense =
+    const urlNewApplication_Today =
+      "http://localhost:8000/api/v1/reports/new_application/today";
+    const urlIssuedLicense_All =
       "http://localhost:8000/api/v1/reports/issued_license/";
+    const urlIssuedLicense_Today =
+      "http://localhost:8000/api/v1/reports/issued_license/today";
 
-    const reqStatusChange = axios.get(urlStatusChange);
-    const reqNewApplication = axios.get(urlNewApplication);
-    const reqIssuedLicense = axios.get(urlIssuedLicense);
+    // const reqStatusChange_Today = axios.get(urlStatusChange_Today);
+    const reqStatusChange_All = axios.get(urlStatusChange_All);
+    // const reqNewApplication_Today = axios.get(urlNewApplication_Today);
+    const reqNewApplication_All = axios.get(urlNewApplication_All);
+    // const reqIssuedLicense_Today = axios.get(urlIssuedLicense_Today);
+    const reqIssuedLicense_All = axios.get(urlIssuedLicense_All);
 
     axios
-      .all([reqStatusChange, reqNewApplication, reqIssuedLicense])
+      .all([
+        reqStatusChange_All,
+        // reqStatusChange_Today,
+        reqNewApplication_All,
+        // reqNewApplication_Today,
+        reqIssuedLicense_All,
+        // reqIssuedLicense_Today,
+      ])
       .then((res) => {
-        const resStatusChange = res[0].data;
-        const resNewApplication = res[1].data;
-        const resIssuedLicense = res[2].data;
+        const resStatusChange_All = res[0].data;
+        const resStatusChange_Today = res[1].data;
+        const resNewApplication_All = res[2].data;
+        // const resNewApplication_Today = res[3].data;
+        // const resIssuedLicense_All = res[4].data;
+        // const resIssuedLicense_Today = res[5].data;
 
         const reports = this.state.reports;
         const reportsData = reports.map((report) => {
           switch (report.name) {
             case "status changes":
-              report.data = resStatusChange;
+              report.data.all = resStatusChange_All;
+              report.data.today = resStatusChange_Today;
               return report;
             case "new applications":
-              report.data = resNewApplication;
+              report.data.all = resNewApplication_All;
+              // report.data.today = resNewApplication_Today;
               return report;
             case "issued licenses":
-              report.data = resIssuedLicense;
+              // report.data.all = resIssuedLicense_All;
+              // report.data.today = resIssuedLicense_Today;
               return report;
             default:
               break;

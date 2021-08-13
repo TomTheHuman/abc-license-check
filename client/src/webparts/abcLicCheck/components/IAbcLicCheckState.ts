@@ -3,7 +3,7 @@ export interface Page {
   text: string;
   name: string;
   type: string;
-  data: Array<Object>;
+  data: Object;
 }
 
 export interface Report {
@@ -11,7 +11,7 @@ export interface Report {
   text: string;
   name: string;
   type: string;
-  data: Array<IItem>;
+  data: IData;
   headers: Array<Header>;
 }
 
@@ -51,8 +51,13 @@ export interface IItem {
   geocode: number;
 }
 
+export interface IData {
+  today: Array<IItem>;
+  all: Array<IItem>;
+}
+
 export interface IAbcLicCheckState {
   currentPage: Page;
   menuOptions: Array<Page>;
-  reports: Array<Page>;
+  reports: Array<Report>;
 }

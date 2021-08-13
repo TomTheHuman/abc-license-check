@@ -40,6 +40,7 @@ class Admin(models.Model):
 
 class Report(models.Model):
     id = models.AutoField(primary_key=True, auto_created=True)
+    report_date = models.DateTimeField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     report_type = models.CharField(
         max_length=255, null=False, choices=REPORT_TYPE_CHOICES, default='status_change')
