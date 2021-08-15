@@ -24,6 +24,7 @@ import {
   ThemeProvider,
   ScrollablePane,
   PrimaryButton,
+  DefaultButton,
 } from "office-ui-fabric-react";
 import { TooltipHost } from "@fluentui/react/lib/Tooltip";
 import { IRenderFunction } from "@fluentui/react/lib/Utilities";
@@ -38,6 +39,8 @@ export interface DetailsListState {
   columns: Object;
   filteredColumns: IColumn[];
   items: IItem[];
+  itemsToday: IItem[];
+  itemsAll: IItem[];
   selectionDetails: string;
   isCompactMode: boolean;
   isToday: boolean;
@@ -63,6 +66,7 @@ export class DataList extends React.Component<
   private _headers: Array<Header>;
   private _apiURL: string;
   private _limitChoices: Array<IDropdownOption>;
+  private _colFilters: Array<Header>;
 
   constructor(props: { report: Report }) {
     super(props);
@@ -592,14 +596,14 @@ export class DataList extends React.Component<
 
     const filteredColumns = this._filterColumns(columns, this._headers);
 
-    const colFilters = this._headers.filter((e) => {
+    this._colFilters = this._headers.filter((e) => {
       if (e.filter) return e;
     });
 
     const selectedFilters = {
-      filter1: { dropdown: colFilters[0], textField: "" },
-      filter2: { dropdown: colFilters[1], textField: "" },
-      filter3: { dropdown: colFilters[2], textField: "" },
+      filter1: { dropdown: this._colFilters[0], textField: "" },
+      filter2: { dropdown: this._colFilters[1], textField: "" },
+      filter3: { dropdown: this._colFilters[2], textField: "" },
     };
 
     this._selection = new Selection({
@@ -618,6 +622,8 @@ export class DataList extends React.Component<
         text: "25",
       },
       items: [],
+      itemsToday: [],
+      itemsAll: [],
       columns: columns,
       filteredColumns: filteredColumns,
       selectionDetails: this._getSelectionDetails(),
@@ -625,13 +631,13 @@ export class DataList extends React.Component<
       isToday: true,
       showControl: false,
       isFiltered: false,
-      colFilters: colFilters,
+      colFilters: this._colFilters,
       selectedFilters: selectedFilters,
       announcedMessage: undefined,
       report: this.props.report,
       height: 0,
-      currentPage: 1,
-      pageCount: 1,
+      currentPage: 0,
+      pageCount: 0,
     };
   }
 
@@ -751,6 +757,7 @@ export class DataList extends React.Component<
                   onChange={(ev, text) =>
                     this._onChangeText(ev, text, "filter2")
                   }
+                  value={selectedFilters["filter2"].textField}
                   className={styles.control}
                 />
                 <Announced
@@ -770,6 +777,7 @@ export class DataList extends React.Component<
                   onChange={(ev, text) =>
                     this._onChangeText(ev, text, "filter3")
                   }
+                  value={selectedFilters["filter3"].textField}
                   className={styles.control}
                 />
                 <Announced
@@ -779,10 +787,17 @@ export class DataList extends React.Component<
             </div>
             <div className={`${styles.controlRow} ms-Grid-row`} dir="rtl">
               <div className={`ms-Grid-col ms-sm12`}>
-                <PrimaryButton
-                  text="Apply Filters"
-                  onClick={() => this._onApplyFilters()}
-                />
+                {this.state.isFiltered ? (
+                  <DefaultButton
+                    text="Reset Filters"
+                    onClick={() => this._resetFilters()}
+                  />
+                ) : (
+                  <PrimaryButton
+                    text="Apply Filters"
+                    onClick={() => this._onApplyFilters()}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -815,7 +830,6 @@ export class DataList extends React.Component<
               styles={gridStyles}
               layoutMode={DetailsListLayoutMode.justified}
               isHeaderVisible={true}
-              onItemInvoked={this._onItemInvoked}
               onRenderDetailsHeader={this.onRenderDetailsHeader}
             />
           </div>
@@ -853,25 +867,53 @@ export class DataList extends React.Component<
 
   private _getItems(additionalParams?: string) {
     // Make API call for today and all report data (only page 1)
-    let paginationParams: string = `p/${
-      this.state.isToday ? "today/" : ""
-    }?limit=${this.state.limit.key}&offset=${this.state.offset}/`;
+    const urlToday = this._apiURL.concat("today/");
+    const urlAll = this._apiURL;
 
-    let req: string = this._apiURL.concat(paginationParams);
+    const reqToday = axios.get(urlToday);
+    const reqAll = axios.get(urlAll);
 
-    axios.get(req).then((res) => {
-      console.log(res);
-      const resItems = res.data;
-      this._items = resItems.results;
+    axios.all([reqToday, reqAll]).then((res) => {
+      const resToday = res[0].data;
+      const resAll = res[1].data;
 
-      const pageCount = Math.ceil(
-        resItems.count / parseInt(this.state.limit.text)
-      );
+      this._itemsToday = resToday;
+      this._itemsAll = resAll;
+
+      // Set initial items to today's items
+      this._items = resToday;
 
       this.setState({
-        items: this._items,
-        pageCount: pageCount,
+        itemsToday: this._itemsToday,
+        itemsAll: this._itemsAll,
       });
+
+      this._setPageCount();
+      this._paginateData();
+    });
+  }
+
+  // Sets page count for current data set
+  private _setPageCount() {
+    const pageCount = Math.ceil(
+      this._items.length / parseInt(this.state.limit.text)
+    );
+
+    this.setState({
+      pageCount: pageCount > 0 ? pageCount : 1,
+      currentPage: 1,
+    });
+  }
+
+  // Paginates data and sets current page using offset/limit
+  private _paginateData() {
+    const { limit, offset } = this.state;
+    const start = offset;
+    const end = offset + parseInt(limit.text);
+    const paginatedData = this._items.slice(start, end);
+
+    this.setState({
+      items: paginatedData,
     });
   }
 
@@ -880,23 +922,18 @@ export class DataList extends React.Component<
   }
 
   private _onSelectLimit = (selected: IDropdownOption): void => {
-    if (this.state.limit.key !== selected.key && !this.state.isFiltered) {
+    if (this.state.limit.key !== selected.key) {
       this.setState(
         {
-          items: [],
+          limit: selected,
           offset: 0,
-          limit: selected,
-          currentPage: 1,
+          pageCount: 0,
+          currentPage: 0,
         },
-        () => this._getItems()
-      );
-    } else if (this.state.isFiltered) {
-      this.setState(
-        {
-          items: [],
-          limit: selected,
-        },
-        () => this._onChangePage(1)
+        () => {
+          this._setPageCount();
+          this._paginateData();
+        }
       );
     }
   };
@@ -916,14 +953,20 @@ export class DataList extends React.Component<
     ev: React.MouseEvent<HTMLElement>,
     checked: boolean
   ): void => {
+    this._items = checked ? this._itemsToday : this._itemsAll;
+
     this.setState(
       {
-        items: [],
+        itemsToday: this._itemsToday,
+        itemsAll: this._itemsAll,
         offset: 0,
+        pageCount: 0,
+        currentPage: 0,
         isToday: checked,
-        currentPage: 1,
       },
-      () => this._getItems()
+      () => {
+        this._resetFilters();
+      }
     );
   };
 
@@ -938,16 +981,10 @@ export class DataList extends React.Component<
     this.setState({ selectedFilters: selected });
   };
 
-  // TODO FIX THIS IT NEEDS TO BE DONE ON THE BACK END
   private _onApplyFilters() {
     this.setState({
-      items: [],
       isFiltered: true,
     });
-
-    // Make API call for today and all report data (all, unpaginated)
-    let urlParams: string = `${this.state.isToday ? "today/" : ""}`;
-    let req: string = this._apiURL.concat(urlParams);
 
     let selected = this.state.selectedFilters;
 
@@ -955,45 +992,71 @@ export class DataList extends React.Component<
     const filtText2 = selected["filter2"].textField.toLowerCase();
     const filtText3 = selected["filter3"].textField.toLowerCase();
 
-    axios.get(req).then((res) => {
-      this._items = res.data;
+    if (this.state.isToday) {
+      this._items = this.state.itemsToday;
+    } else {
+      this._items = this.state.itemsAll;
+    }
 
-      const allItemsCopy = this._items.filter((i) => {
-        return (
-          i[selected["filter1"].dropdown.key]
-            .toString()
-            .toLowerCase()
-            .indexOf(filtText1) > -1 &&
-          i[selected["filter2"].dropdown.key]
-            .toString()
-            .toLowerCase()
-            .indexOf(filtText2) > -1 &&
-          i[selected["filter3"].dropdown.key]
-            .toString()
-            .toLowerCase()
-            .indexOf(filtText3) > -1
-        );
-      });
-
-      this._items = allItemsCopy;
-
-      const pageCount = Math.ceil(
-        this._items.length / parseInt(this.state.limit.text)
-      );
-
-      this.setState(
-        {
-          pageCount: pageCount,
-        },
-        () => this._onChangePage(1)
+    // TODO Throws error when trying to get .toString of value that's null (like street address)
+    const allItemsCopy = this._items.filter((i) => {
+      return (
+        i[selected["filter1"].dropdown.key]
+          .toString()
+          .toLowerCase()
+          .indexOf(filtText1) > -1 &&
+        i[selected["filter2"].dropdown.key]
+          .toString()
+          .toLowerCase()
+          .indexOf(filtText2) > -1 &&
+        i[selected["filter3"].dropdown.key]
+          .toString()
+          .toLowerCase()
+          .indexOf(filtText3) > -1
       );
     });
+
+    this._items = allItemsCopy;
+    this.setState(
+      {
+        offset: 0,
+        pageCount: 0,
+        currentPage: 0,
+      },
+      () => {
+        this._setPageCount();
+        this._paginateData();
+      }
+    );
   }
 
-  private _onItemInvoked(item: any): void {
-    alert(`Item invoked: ${item.name}`);
+  // TODO Reset sorts on columns
+  private _resetFilters() {
+    const filters = {
+      filter1: { dropdown: this._colFilters[0], textField: "" },
+      filter2: { dropdown: this._colFilters[1], textField: "" },
+      filter3: { dropdown: this._colFilters[2], textField: "" },
+    };
+
+    if (this.state.isToday) {
+      this._items = this.state.itemsToday;
+    } else {
+      this._items = this.state.itemsAll;
+    }
+
+    this.setState(
+      {
+        isFiltered: false,
+        selectedFilters: filters,
+      },
+      () => {
+        this._setPageCount();
+        this._paginateData();
+      }
+    );
   }
 
+  // TODO Update to add something relavent
   private _getSelectionDetails(): string {
     const selectionCount = this._selection.getSelectedCount();
 
@@ -1014,7 +1077,8 @@ export class DataList extends React.Component<
     ev: React.MouseEvent<HTMLElement>,
     column: IColumn
   ): void => {
-    const { filteredColumns, items } = this.state;
+    const { filteredColumns } = this.state;
+    const items = this._items;
     const newColumns: IColumn[] = filteredColumns.slice();
     const currColumn: IColumn = newColumns.filter(
       (currCol) => column.key === currCol.key
@@ -1033,15 +1097,26 @@ export class DataList extends React.Component<
         newCol.isSortedDescending = true;
       }
     });
+
     const newItems = _copyAndSort(
       items,
       currColumn.fieldName!,
       currColumn.isSortedDescending
     );
-    this.setState({
-      columns: newColumns,
-      items: newItems,
-    });
+
+    this._items = newItems;
+    if (this.state.isToday) {
+      this.setState({ itemsToday: this._items });
+    } else {
+      this.setState({ itemsAll: this._itemsAll });
+    }
+
+    this.setState(
+      {
+        columns: newColumns,
+      },
+      () => this._paginateData()
+    );
   };
 
   private _filterColumns(columns: Object, headers: Array<Header>): IColumn[] {
@@ -1076,36 +1151,17 @@ export class DataList extends React.Component<
   };
 
   private _onChangePage(page: number) {
-    if (page !== this.state.currentPage && !this.state.isFiltered) {
-      const newOffset = (page - 1) * parseInt(this.state.limit.text);
+    if (page !== this.state.currentPage) {
+      const { limit } = this.state;
+      const newOffset = (page - 1) * parseInt(limit.text);
 
       this.setState(
         {
-          items: [],
-          currentPage: page,
           offset: newOffset,
+          currentPage: page,
         },
-        () => this._getItems()
+        () => this._paginateData()
       );
-    } else if (this.state.isFiltered) {
-      const newOffset = (page - 1) * parseInt(this.state.limit.text);
-      const { limit } = this.state;
-      const start = newOffset;
-      let end;
-
-      if (newOffset + parseInt(limit.text) < this._items.length) {
-        end = newOffset + parseInt(limit.text);
-      } else {
-        end = this._items.length;
-      }
-
-      const paginatedItems = this._items.slice(start, end);
-
-      this.setState({
-        items: paginatedItems,
-        currentPage: page,
-        offset: newOffset,
-      });
     }
   }
 }

@@ -22,10 +22,6 @@ class ReportList(ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
-class ReportListP(ListAPIView):
-    queryset = Report.objects.all()
-    serializer_class = ReportSerializer
-    pagination_class = ReportPagination
 
 class ReportByTypeList(ListAPIView):
     queryset = Report.objects.all()
@@ -36,29 +32,10 @@ class ReportByTypeList(ListAPIView):
         type = self.kwargs['type']
         return Report.objects.filter(report_type=type)   
 
-class ReportByTypeListP(ListAPIView):
-    queryset = Report.objects.all()
-    serializer_class = ReportSerializer
-    pagination_class = ReportPagination
-
-
-    def get_queryset(self):
-        type = self.kwargs['type']
-        return Report.objects.filter(report_type=type)
 
 class ReportByTypeTodayList(ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
-
-    def get_queryset(self):
-        type = self.kwargs['type']
-        res = Report.objects.filter(report_type=type, report_date__date=datetime.date.today())
-        return res
-
-class ReportByTypeTodayListP(ListAPIView):
-    queryset = Report.objects.all()
-    serializer_class = ReportSerializer
-    pagination_class = ReportPagination
 
     def get_queryset(self):
         type = self.kwargs['type']

@@ -51,7 +51,7 @@ class Command(BaseCommand):
                     # Initialize new dict to store row data
                     status_change = Report()
                     if counter < 5:
-                        datetime_report = datetime.datetime.strptime("08/14/2021", format_str)
+                        datetime_report = datetime.datetime.strptime("08/15/2021", format_str)
                         counter += 1
                     else:
                         datetime_report = datetime.datetime.strptime("07/01/2021", format_str)
@@ -180,7 +180,7 @@ class Command(BaseCommand):
                     # Initialize new dict to store row data
                     issued_license = Report()
                     if counter < 5:
-                        datetime_report = datetime.datetime.strptime("08/14/2021", format_str)
+                        datetime_report = datetime.datetime.strptime("08/15/2021", format_str)
                         counter += 1
                     else:
                         datetime_report = datetime.datetime.strptime("07/01/2021", format_str)
@@ -320,7 +320,7 @@ class Command(BaseCommand):
                     # Initialize new dict to store row data
                     new_application = Report()
                     if counter < 5:
-                        datetime_report = datetime.datetime.strptime("08/14/2021", format_str)
+                        datetime_report = datetime.datetime.strptime("08/15/2021", format_str)
                         counter += 1
                     else:
                         datetime_report = datetime.datetime.strptime("07/01/2021", format_str)
