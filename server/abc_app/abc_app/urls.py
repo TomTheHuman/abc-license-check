@@ -50,9 +50,9 @@ urlpatterns = [
     path('api/v1/reports/new/', report.ReportCreate.as_view()),
     path('api/v1/reports/<int:id>/', report.ReportRetrieveUpdateDestroy.as_view()),
     path('api/v1/reports/<str:type>/', report.ReportByTypeList.as_view()),
-    path('api/v1/reports/p/<str:type>/', report.ReportByTypeListP.as_view()),
+    path('api/v1/reports/<str:type>/p/', report.ReportByTypeListP.as_view()),
     path('api/v1/reports/<str:type>/today/', report.ReportByTypeTodayList.as_view()),
-    path('api/v1/reports/p/<str:type>/today/', report.ReportByTypeTodayListP.as_view()),
+    path('api/v1/reports/<str:type>/p/today/', report.ReportByTypeTodayListP.as_view()),
 
     # API STATUSES
     path('api/v1/statuses/', status.StatusList.as_view()),

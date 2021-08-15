@@ -42,6 +42,7 @@ export interface DetailsListState {
   isCompactMode: boolean;
   isToday: boolean;
   showControl: boolean;
+  isFiltered: boolean;
   colFilters: Array<Header>;
   selectedFilters: Object;
   announcedMessage?: string;
@@ -623,6 +624,7 @@ export class DataList extends React.Component<
       isCompactMode: false,
       isToday: true,
       showControl: false,
+      isFiltered: false,
       colFilters: colFilters,
       selectedFilters: selectedFilters,
       announcedMessage: undefined,
@@ -878,7 +880,7 @@ export class DataList extends React.Component<
   }
 
   private _onSelectLimit = (selected: IDropdownOption): void => {
-    if (this.state.limit.key !== selected.key) {
+    if (this.state.limit.key !== selected.key && !this.state.isFiltered) {
       this.setState(
         {
           items: [],
@@ -887,6 +889,14 @@ export class DataList extends React.Component<
           currentPage: 1,
         },
         () => this._getItems()
+      );
+    } else if (this.state.isFiltered) {
+      this.setState(
+        {
+          items: [],
+          limit: selected,
+        },
+        () => this._onChangePage(1)
       );
     }
   };
@@ -932,27 +942,12 @@ export class DataList extends React.Component<
   private _onApplyFilters() {
     this.setState({
       items: [],
+      isFiltered: true,
     });
 
     // Make API call for today and all report data (all, unpaginated)
     let urlParams: string = `${this.state.isToday ? "today/" : ""}`;
-
     let req: string = this._apiURL.concat(urlParams);
-
-    axios.get(req).then((res) => {
-      console.log(res);
-      const resItems = res.data;
-      this._items = resItems;
-
-      const pageCount = Math.ceil(
-        resItems.count / parseInt(this.state.limit.text)
-      );
-
-      this.setState({
-        items: this._items,
-        pageCount: pageCount,
-      });
-    });
 
     let selected = this.state.selectedFilters;
 
@@ -960,31 +955,38 @@ export class DataList extends React.Component<
     const filtText2 = selected["filter2"].textField.toLowerCase();
     const filtText3 = selected["filter3"].textField.toLowerCase();
 
-    const allItemsCopy = this._items.filter((i) => {
-      return (
-        i[selected["filter1"].dropdown.key]
-          .toString()
-          .toLowerCase()
-          .indexOf(filtText1) > -1 &&
-        i[selected["filter2"].dropdown.key]
-          .toString()
-          .toLowerCase()
-          .indexOf(filtText2) > -1 &&
-        i[selected["filter3"].dropdown.key]
-          .toString()
-          .toLowerCase()
-          .indexOf(filtText3) > -1
-      );
-    });
+    axios.get(req).then((res) => {
+      this._items = res.data;
 
-    this.setState({
-      items:
-        selected["filter1"].textField ||
-        selected["filter2"].textField ||
-        selected["filter3"].textField
-          ? allItemsCopy
-          : this._items,
-      offset: 0,
+      const allItemsCopy = this._items.filter((i) => {
+        return (
+          i[selected["filter1"].dropdown.key]
+            .toString()
+            .toLowerCase()
+            .indexOf(filtText1) > -1 &&
+          i[selected["filter2"].dropdown.key]
+            .toString()
+            .toLowerCase()
+            .indexOf(filtText2) > -1 &&
+          i[selected["filter3"].dropdown.key]
+            .toString()
+            .toLowerCase()
+            .indexOf(filtText3) > -1
+        );
+      });
+
+      this._items = allItemsCopy;
+
+      const pageCount = Math.ceil(
+        this._items.length / parseInt(this.state.limit.text)
+      );
+
+      this.setState(
+        {
+          pageCount: pageCount,
+        },
+        () => this._onChangePage(1)
+      );
     });
   }
 
@@ -1074,7 +1076,7 @@ export class DataList extends React.Component<
   };
 
   private _onChangePage(page: number) {
-    if (page !== this.state.currentPage) {
+    if (page !== this.state.currentPage && !this.state.isFiltered) {
       const newOffset = (page - 1) * parseInt(this.state.limit.text);
 
       this.setState(
@@ -1085,6 +1087,25 @@ export class DataList extends React.Component<
         },
         () => this._getItems()
       );
+    } else if (this.state.isFiltered) {
+      const newOffset = (page - 1) * parseInt(this.state.limit.text);
+      const { limit } = this.state;
+      const start = newOffset;
+      let end;
+
+      if (newOffset + parseInt(limit.text) < this._items.length) {
+        end = newOffset + parseInt(limit.text);
+      } else {
+        end = this._items.length;
+      }
+
+      const paginatedItems = this._items.slice(start, end);
+
+      this.setState({
+        items: paginatedItems,
+        currentPage: page,
+        offset: newOffset,
+      });
     }
   }
 }
