@@ -3,7 +3,6 @@ export interface Page {
   text: string;
   name: string;
   type: string;
-  data: Object;
 }
 
 export interface Report {
@@ -11,7 +10,6 @@ export interface Report {
   text: string;
   name: string;
   type: string;
-  data: IData;
   headers: Array<Header>;
 }
 
@@ -23,7 +21,7 @@ export interface Header {
 
 export interface IItem {
   id: number;
-  created: Date;
+  report_date: Date;
   report_type: string;
   lic_num: number;
   status_from: string;
@@ -49,11 +47,6 @@ export interface IItem {
   trans_from: string;
   trans_to: string;
   geocode: number;
-}
-
-export interface IData {
-  today: Array<IItem>;
-  all: Array<IItem>;
 }
 
 export interface IAbcLicCheckState {

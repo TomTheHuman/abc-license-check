@@ -40,6 +40,7 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ['id',
                   'created',
+                  'report_date',
                   'report_type',
                   'lic_num',
                   'status_from',

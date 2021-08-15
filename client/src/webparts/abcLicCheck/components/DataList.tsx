@@ -1,4 +1,5 @@
 import * as React from "react";
+import axios from "axios";
 import { Page, Report, Header, IItem } from "./IAbcLicCheckState";
 import { TextField } from "@fluentui/react/lib/TextField";
 import { Toggle } from "@fluentui/react/lib/Toggle";
@@ -22,21 +23,22 @@ import {
   IconButton,
   ThemeProvider,
   ScrollablePane,
+  PrimaryButton,
 } from "office-ui-fabric-react";
 import { TooltipHost } from "@fluentui/react/lib/Tooltip";
 import { IRenderFunction } from "@fluentui/react/lib/Utilities";
+import Pagination from "office-ui-fabric-react-pagination";
 import styles from "./styles/DetailsList.module.scss";
 import { StylesProvider } from "@material-ui/styles";
 import { useState } from "react";
 
 export interface DetailsListState {
+  offset: number;
+  limit: IDropdownOption;
   columns: Object;
   filteredColumns: IColumn[];
   items: IItem[];
-  itemsAll: IItem[];
-  itemsToday: IItem[];
   selectionDetails: string;
-  isModalSelection: boolean;
   isCompactMode: boolean;
   isToday: boolean;
   showControl: boolean;
@@ -45,6 +47,8 @@ export interface DetailsListState {
   announcedMessage?: string;
   report: Report;
   height: number;
+  currentPage: number;
+  pageCount: number;
 }
 
 export class DataList extends React.Component<
@@ -56,24 +60,33 @@ export class DataList extends React.Component<
   private _itemsAll: IItem[];
   private _itemsToday: IItem[];
   private _headers: Array<Header>;
+  private _apiURL: string;
+  private _limitChoices: Array<IDropdownOption>;
 
   constructor(props: { report: Report }) {
     super(props);
-
-    this._items = this.props.report.data.today;
-    this._itemsAll = this.props.report.data.all;
-    this._itemsToday = this.props.report.data.today;
     this._headers = this.props.report.headers;
+
+    // API URL for current page of data
+    this._apiURL = `http://localhost:8000/api/v1/reports/${this.props.report.name}/`;
+    this._limitChoices = [
+      { key: 10, text: "10" },
+      { key: 25, text: "25" },
+      { key: 50, text: "50" },
+      { key: 75, text: "75" },
+      { key: 100, text: "100" },
+    ];
 
     this._updateWindowDimensions = this._updateWindowDimensions.bind(this);
 
     const columns: Object = {
-      created: {
-        key: "created",
-        name: "Created",
-        fieldName: "created",
+      report_date: {
+        key: "report_date",
+        name: "Report Date",
+        fieldName: "report_date",
         data: "date",
-        ariaLabel: "Column operations for Created, Press to sort on Created",
+        ariaLabel:
+          "Column operations for Report Date, Press to sort on Report Date",
         isResizable: true,
         isRowHeader: true,
         minWidth: 80,
@@ -85,7 +98,7 @@ export class DataList extends React.Component<
         onColumnClick: this._onColumnClick,
         isPadded: true,
         onRender: (item: IItem) => {
-          let newDate = new Date(String(item.created));
+          let newDate = new Date(String(item.report_date));
           return (
             <span>{`${
               newDate.getMonth() + 1
@@ -102,7 +115,7 @@ export class DataList extends React.Component<
           "Column operations for Report Type, Press to sort on Report Type",
         isResizable: true,
         isRowHeader: true,
-        minWidth: 100,
+        minWidth: 120,
         maxWidth: 260,
         isSorted: true,
         isSortedDescending: false,
@@ -597,13 +610,16 @@ export class DataList extends React.Component<
     });
 
     this.state = {
-      items: this._items,
-      itemsAll: this._itemsAll,
-      itemsToday: this._itemsToday,
+      offset: 0,
+      // TODO Adjust default based on display size only on componentDidMount()
+      limit: {
+        key: 25,
+        text: "25",
+      },
+      items: [],
       columns: columns,
       filteredColumns: filteredColumns,
       selectionDetails: this._getSelectionDetails(),
-      isModalSelection: false,
       isCompactMode: false,
       isToday: true,
       showControl: false,
@@ -612,19 +628,17 @@ export class DataList extends React.Component<
       announcedMessage: undefined,
       report: this.props.report,
       height: 0,
+      currentPage: 1,
+      pageCount: 1,
     };
   }
 
   public render() {
     const {
-      columns,
       filteredColumns,
       isCompactMode,
       items,
-      itemsAll,
-      itemsToday,
       selectionDetails,
-      isModalSelection,
       isToday,
       showControl,
       colFilters,
@@ -632,7 +646,7 @@ export class DataList extends React.Component<
       announcedMessage,
     } = this.state;
     const filterIcon: IIconProps = { iconName: "FilterSettings" };
-    const controlHeight = 200;
+    const controlHeight = 250;
 
     const gridStyles: Partial<IDetailsListStyles> = {
       root: {
@@ -672,21 +686,20 @@ export class DataList extends React.Component<
           >
             <div className={`${styles.controlRow} ms-Grid-row`}>
               <div className={`ms-Grid-col ms-sm4 ms-md4 ms-lg-2`}>
+                <Dropdown
+                  className={styles.control}
+                  label="Items to display"
+                  selectedKey={this.state.limit.key}
+                  options={this._limitChoices}
+                  onChange={(e, item) => this._onSelectLimit(item)}
+                />
+              </div>
+              <div className={`ms-Grid-col ms-sm4 ms-md4 ms-lg-2`}>
                 <Toggle
                   label="Enable compact mode"
                   checked={isCompactMode}
                   onChange={this._onChangeCompactMode}
                   onText="Compact"
-                  offText="Normal"
-                  className={styles.control}
-                />
-              </div>
-              <div className={`ms-Grid-col ms-sm4 ms-md4 ms-lg-2`}>
-                <Toggle
-                  label="Enable modal selection"
-                  checked={isModalSelection}
-                  onChange={this._onChangeModalSelection}
-                  onText="Modal"
                   offText="Normal"
                   className={styles.control}
                 />
@@ -762,6 +775,14 @@ export class DataList extends React.Component<
                 />
               </div>
             </div>
+            <div className={`${styles.controlRow} ms-Grid-row`} dir="rtl">
+              <div className={`ms-Grid-col ms-sm12`}>
+                <PrimaryButton
+                  text="Apply Filters"
+                  onClick={() => this._onApplyFilters()}
+                />
+              </div>
+            </div>
           </div>
         )}
         <div className={styles.selectionDetails}>{selectionDetails}</div>
@@ -782,41 +803,31 @@ export class DataList extends React.Component<
         </div>
         <div className={`ms-Grid-row`}>
           <div className={`${styles.detailsList} ms-Grid-col ms-sm12`}>
-            {isModalSelection ? (
-              <MarqueeSelection selection={this._selection}>
-                <DetailsList
-                  items={items}
-                  compact={isCompactMode}
-                  columns={filteredColumns}
-                  selectionMode={SelectionMode.multiple}
-                  getKey={this._getId}
-                  setKey="multiple"
-                  layoutMode={DetailsListLayoutMode.justified}
-                  isHeaderVisible={true}
-                  selection={this._selection}
-                  selectionPreservedOnEmptyClick={true}
-                  onItemInvoked={this._onItemInvoked}
-                  enterModalSelectionOnTouch={true}
-                  ariaLabelForSelectionColumn="Toggle selection"
-                  ariaLabelForSelectAllCheckbox="Toggle selection for all items"
-                  checkButtonAriaLabel="Row checkbox"
-                />
-              </MarqueeSelection>
-            ) : (
-              <DetailsList
-                items={items}
-                compact={isCompactMode}
-                columns={filteredColumns}
-                selectionMode={SelectionMode.none}
-                getKey={this._getId}
-                setKey="none"
-                styles={gridStyles}
-                layoutMode={DetailsListLayoutMode.justified}
-                isHeaderVisible={true}
-                onItemInvoked={this._onItemInvoked}
-                onRenderDetailsHeader={this.onRenderDetailsHeader}
-              />
-            )}
+            <DetailsList
+              items={items}
+              compact={isCompactMode}
+              columns={filteredColumns}
+              selectionMode={SelectionMode.none}
+              getKey={this._getId}
+              setKey="none"
+              styles={gridStyles}
+              layoutMode={DetailsListLayoutMode.justified}
+              isHeaderVisible={true}
+              onItemInvoked={this._onItemInvoked}
+              onRenderDetailsHeader={this.onRenderDetailsHeader}
+            />
+          </div>
+        </div>
+        <div className={`ms-Grid-row ${styles.pagination}`} dir="ltr">
+          <div className={`ms-Grid-col ms-sm12`}>
+            <Pagination
+              currentPage={this.state.currentPage}
+              totalPages={this.state.pageCount}
+              hideFirstAndLastPageLinks={true}
+              onChange={(page) => {
+                this._onChangePage(page);
+              }}
+            />
           </div>
         </div>
       </ThemeProvider>
@@ -826,19 +837,8 @@ export class DataList extends React.Component<
   public componentDidMount() {
     this._updateWindowDimensions();
     window.addEventListener("resize", this._updateWindowDimensions);
-  }
 
-  public componentDidUpdate(
-    previousProps: any,
-    previousState: DetailsListState
-  ) {
-    // Handle Modal Selection
-    if (
-      previousState.isModalSelection !== this.state.isModalSelection &&
-      !this.state.isModalSelection
-    ) {
-      this._selection.setAllSelected(false);
-    }
+    this._getItems();
   }
 
   public componentWillUnmount() {
@@ -849,9 +849,47 @@ export class DataList extends React.Component<
     this.setState({ height: window.innerHeight });
   }
 
+  private _getItems(additionalParams?: string) {
+    // Make API call for today and all report data (only page 1)
+    let paginationParams: string = `p/${
+      this.state.isToday ? "today/" : ""
+    }?limit=${this.state.limit.key}&offset=${this.state.offset}/`;
+
+    let req: string = this._apiURL.concat(paginationParams);
+
+    axios.get(req).then((res) => {
+      console.log(res);
+      const resItems = res.data;
+      this._items = resItems.results;
+
+      const pageCount = Math.ceil(
+        resItems.count / parseInt(this.state.limit.text)
+      );
+
+      this.setState({
+        items: this._items,
+        pageCount: pageCount,
+      });
+    });
+  }
+
   private _getId(item: any, index?: number): string {
     return item.id;
   }
+
+  private _onSelectLimit = (selected: IDropdownOption): void => {
+    if (this.state.limit.key !== selected.key) {
+      this.setState(
+        {
+          items: [],
+          offset: 0,
+          limit: selected,
+          currentPage: 1,
+        },
+        () => this._getItems()
+      );
+    }
+  };
 
   private _onChangeCompactMode = (
     ev: React.MouseEvent<HTMLElement>,
@@ -864,21 +902,19 @@ export class DataList extends React.Component<
     this.setState({ showControl: !this.state.showControl });
   };
 
-  private _onChangeModalSelection = (
-    ev: React.MouseEvent<HTMLElement>,
-    checked: boolean
-  ): void => {
-    this.setState({ isModalSelection: checked });
-  };
-
   private _onChangeViewToday = (
     ev: React.MouseEvent<HTMLElement>,
     checked: boolean
   ): void => {
-    this.setState({
-      isToday: checked,
-      items: checked ? this._itemsToday : this._itemsAll,
-    });
+    this.setState(
+      {
+        items: [],
+        offset: 0,
+        isToday: checked,
+        currentPage: 1,
+      },
+      () => this._getItems()
+    );
   };
 
   private _onChangeText = (
@@ -890,6 +926,35 @@ export class DataList extends React.Component<
 
     selected[currFilter].textField = text;
     this.setState({ selectedFilters: selected });
+  };
+
+  // TODO FIX THIS IT NEEDS TO BE DONE ON THE BACK END
+  private _onApplyFilters() {
+    this.setState({
+      items: [],
+    });
+
+    // Make API call for today and all report data (all, unpaginated)
+    let urlParams: string = `${this.state.isToday ? "today/" : ""}`;
+
+    let req: string = this._apiURL.concat(urlParams);
+
+    axios.get(req).then((res) => {
+      console.log(res);
+      const resItems = res.data;
+      this._items = resItems;
+
+      const pageCount = Math.ceil(
+        resItems.count / parseInt(this.state.limit.text)
+      );
+
+      this.setState({
+        items: this._items,
+        pageCount: pageCount,
+      });
+    });
+
+    let selected = this.state.selectedFilters;
 
     const filtText1 = selected["filter1"].textField.toLowerCase();
     const filtText2 = selected["filter2"].textField.toLowerCase();
@@ -919,8 +984,9 @@ export class DataList extends React.Component<
         selected["filter3"].textField
           ? allItemsCopy
           : this._items,
+      offset: 0,
     });
-  };
+  }
 
   private _onItemInvoked(item: any): void {
     alert(`Item invoked: ${item.name}`);
@@ -1006,6 +1072,21 @@ export class DataList extends React.Component<
       onRenderColumnHeaderTooltip,
     });
   };
+
+  private _onChangePage(page: number) {
+    if (page !== this.state.currentPage) {
+      const newOffset = (page - 1) * parseInt(this.state.limit.text);
+
+      this.setState(
+        {
+          items: [],
+          currentPage: page,
+          offset: newOffset,
+        },
+        () => this._getItems()
+      );
+    }
+  }
 }
 
 function _copyAndSort<T>(

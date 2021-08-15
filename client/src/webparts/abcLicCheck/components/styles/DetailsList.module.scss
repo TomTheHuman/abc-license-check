@@ -48,3 +48,17 @@ $box-shaddow: 0px 2px 5px rgba(0, 0, 0, 0.45);
 .detailsList {
   height: 100%;
 }
+
+.pagination {
+  width: 100%;
+  padding: 8px 0px;
+  margin: 0px;
+  text-align: right;
+  float: right;
+
+  .paginationCol {
+    float: right;
+    padding: 0px;
+    margin: 0px;
+  }
+}

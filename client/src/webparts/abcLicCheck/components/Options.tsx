@@ -6,27 +6,18 @@ export const MenuOptions: Array<Page> = [
     text: "Manage Territories",
     name: "manage territories",
     type: "option",
-    data: {
-      all: [],
-    },
   },
   {
     key: 2,
     text: "Email Recipients",
     name: "email recipients",
     type: "option",
-    data: {
-      all: [],
-    },
   },
   {
     key: 3,
     text: "Download Logs",
     name: "download logs",
     type: "option",
-    data: {
-      all: [],
-    },
   },
 ];
 
@@ -36,23 +27,15 @@ export const Reports: Array<Report> = [
     text: "Dashboard",
     name: "dashboard",
     type: "dashboard",
-    data: {
-      today: [],
-      all: [],
-    },
     headers: null,
   },
   {
     key: 1,
     text: "Status Changes",
-    name: "status changes",
+    name: "status_change",
     type: "report",
-    data: {
-      today: [],
-      all: [],
-    },
     headers: [
-      { key: "created", text: "Created", filter: false },
+      { key: "report_date", text: "Report Date", filter: true },
       { key: "report_type", text: "Report Type", filter: true },
       { key: "lic_num", text: "License Number", filter: true },
       { key: "status_from", text: "Status from", filter: true },
@@ -80,14 +63,10 @@ export const Reports: Array<Report> = [
   {
     key: 2,
     text: "Issued Licenses",
-    name: "issued licenses",
+    name: "issued_license",
     type: "report",
-    data: {
-      today: [],
-      all: [],
-    },
     headers: [
-      { key: "created", text: "Created", filter: false },
+      { key: "report_date", text: "Report Date", filter: true },
       { key: "report_type", text: "Report Type", filter: true },
       { key: "lic_num", text: "License Number", filter: true },
       { key: "status", text: "Status from", filter: true },
@@ -114,14 +93,10 @@ export const Reports: Array<Report> = [
   {
     key: 3,
     text: "New Applications",
-    name: "new applications",
+    name: "new_application",
     type: "report",
-    data: {
-      today: [],
-      all: [],
-    },
     headers: [
-      { key: "created", text: "Created", filter: false },
+      { key: "report_date", text: "Report Date", filter: true },
       { key: "report_type", text: "Report Type", filter: true },
       { key: "lic_num", text: "License Number", filter: true },
       { key: "status", text: "Status from", filter: true },

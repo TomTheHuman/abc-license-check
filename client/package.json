@@ -25,6 +25,7 @@
     "datatables.net-dt": "^1.1.0",
     "material-table": "^1.69.3",
     "office-ui-fabric-react": "6.214.0",
+    "office-ui-fabric-react-pagination": "0.0.8",
     "react": "16.8.5",
     "react-dom": "16.8.5"
   },

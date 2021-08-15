@@ -1,6 +1,9 @@
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.exceptions import ValidationError
+from rest_framework import filters
+from django.db.models import Q
+import django_filters
 import datetime
 from licenses.serializers import ReportSerializer
 from licenses.models import Report
@@ -8,6 +11,7 @@ from licenses.models import Report
 # TODO Only retrieve reports that match districts in territory
 # PAGINATION
 
+FILTER_REQ_COLUMNS = [field.name for field in Report._meta.get_fields()]
 
 class ReportPagination(LimitOffsetPagination):
     default_limit = 25
@@ -18,6 +22,10 @@ class ReportList(ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
+class ReportListP(ListAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    pagination_class = ReportPagination
 
 class ReportByTypeList(ListAPIView):
     queryset = Report.objects.all()
@@ -26,17 +34,34 @@ class ReportByTypeList(ListAPIView):
 
     def get_queryset(self):
         type = self.kwargs['type']
+        return Report.objects.filter(report_type=type)   
+
+class ReportByTypeListP(ListAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    pagination_class = ReportPagination
+
+
+    def get_queryset(self):
+        type = self.kwargs['type']
         return Report.objects.filter(report_type=type)
-        
 
 class ReportByTypeTodayList(ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
+    def get_queryset(self):
+        type = self.kwargs['type']
+        res = Report.objects.filter(report_type=type, report_date__date=datetime.date.today())
+        return res
+
+class ReportByTypeTodayListP(ListAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    pagination_class = ReportPagination
 
     def get_queryset(self):
         type = self.kwargs['type']
-        # TODO Need to compare only month, day, and year when filtering for today's data?
         res = Report.objects.filter(report_type=type, report_date__date=datetime.date.today())
         return res
 
@@ -90,6 +115,7 @@ class ReportRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
             report = response.data
             cache.set('report_data_{}'.format(report['id']), {
                 'created': report['created'],
+                'report_date': report['report_date'],
                 'report_type': report['report_type'],
                 'lic_num': report['lic_num'],
                 'status_from': report['status_from'],
@@ -109,6 +135,7 @@ class ReportRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
                 'mail_city': report['mail_city'],
                 'mail_state': report['mail_state'],
                 'mail_zip': report['mail_zip'],
+                'action': report['action'],
                 'conditions': report['conditions'],
                 'escrow_addr': report['escrow_addr'],
                 'district': report['district'],
@@ -117,3 +144,5 @@ class ReportRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
                 'geocode': report['geocode']
             })
         return response
+
+
